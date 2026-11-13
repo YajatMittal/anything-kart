@@ -169,13 +169,48 @@ function drawHandGuides(g, s, e, col, secs) {
   for (const dx of [-0.2, 0.2]) { g.beginPath(); g.arc((zc + dx * w) * s, y * s, r * s, 0, Math.PI * 2); g.stroke(); }
   g.restore();
   g.font = '20px "Lilita One", system-ui, sans-serif'; g.textAlign = 'center'; g.fillStyle = '#fff'; g.shadowColor = '#000'; g.shadowBlur = 6;
-  const loading = !hands.ready && !hands.failed;
-  g.fillText(loading ? `Loading hand tracking${'.'.repeat(1 + Math.floor(secs * 2) % 3)}` : 'Hold your hands up here', zc * s, (y - r - 16) * s); g.shadowBlur = 0;
+  g.fillText('Hold your hands up here', zc * s, (y - r - 16) * s); g.shadowBlur = 0;
 }
 
 // What the player should do next, and whether they are ready.
+const handsLoading = () => !hands.ready && !hands.failed;
+
+// While hand tracking downloads and starts: a big countdown over the camera picture.
+function drawLoading(g, W, H, secs) {
+  const { frac, secs: left } = hands.loadingLeft;
+  g.save();
+  g.fillStyle = 'rgba(22,48,43,0.55)'; g.fillRect(0, 0, W, H);
+  const pw = Math.min(W * 0.62, 420), ph = Math.min(H * 0.6, 230), x = (W - pw) / 2, y = (H - ph) / 2;
+  g.fillStyle = 'rgba(255,248,232,0.96)'; g.beginPath(); g.roundRect(x, y, pw, ph, 22); g.fill();
+  g.lineWidth = 4; g.strokeStyle = '#16302b'; g.stroke();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#16302b';
+  g.font = `${Math.round(ph * 0.11)}px "Lilita One", system-ui, sans-serif`;
+  g.fillText('Getting hand tracking ready', W / 2, y + ph * 0.17);
+  // the countdown (or a spinner until there's enough to estimate from, and while it starts up)
+  const big = left !== null ? String(Math.max(1, Math.ceil(left))) : null;
+  if (big) {
+    g.font = `${Math.round(ph * 0.34)}px "Lilita One", system-ui, sans-serif`; g.fillStyle = '#f26b21';
+    g.fillText(big, W / 2, y + ph * 0.47);
+  } else {
+    const r = ph * 0.11, cx = W / 2, cy = y + ph * 0.47;
+    g.lineWidth = ph * 0.035; g.lineCap = 'round'; g.strokeStyle = '#f6e9cc'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = '#f26b21'; g.beginPath(); g.arc(cx, cy, r, secs * 5, secs * 5 + Math.PI * 1.3); g.stroke();
+  }
+  // progress bar
+  const bw = pw * 0.72, bh = Math.max(8, ph * 0.055), bx = (W - bw) / 2, by = y + ph * 0.7;
+  g.fillStyle = '#f6e9cc'; g.beginPath(); g.roundRect(bx, by, bw, bh, bh / 2); g.fill();
+  g.fillStyle = '#2ec4b6'; g.beginPath(); g.roundRect(bx, by, Math.max(bh, bw * frac), bh, bh / 2); g.fill();
+  g.font = `700 ${Math.round(ph * 0.07)}px Nunito, system-ui, sans-serif`; g.fillStyle = '#4c6660';
+  const sub = hands.load.starting ? 'Almost ready…' : big ? `${big === '1' ? 'About a second' : `About ${big} seconds`} · only slow the first time` : 'Downloading… only slow the first time';
+  g.fillText(sub, W / 2, y + ph * 0.86);
+  g.restore();
+}
+
 function statusFor(e) {
-  if (!hands.ready && !hands.failed) return ['Loading hand tracking… (only slow the first time)', false];
+  if (handsLoading()) {
+    const left = hands.loadingLeft.secs;
+    return [hands.load.starting ? 'Hand tracking almost ready…' : left !== null ? `Loading hand tracking… about ${Math.max(1, Math.ceil(left))} s` : 'Loading hand tracking…', false];
+  }
   if (!e.calibrated) {
     if (e.phase === PHASE.SETTLE) return ['Found your hands! Get comfortable…', false];
     if (e.phase === PHASE.HOLD) return [`Hold steady… (${Math.round(e.holdProgress * 100)}%)`, false];
@@ -203,7 +238,7 @@ export function updateCalib(dt, now) {
     const out = e.output;
     if (e.justLocked) { e.justLocked = false; sound.play('lock'); }
     if (e.justPassed) { sound.play(e.canStart ? 'lap' : 'box'); e.justPassed = null; }
-    if (!e.calibrated && !e.ht.L && !e.ht.R) drawHandGuides(g, s, e, cols[z], secs);
+    if (!e.calibrated && !e.ht.L && !e.ht.R && !handsLoading()) drawHandGuides(g, s, e, cols[z], secs);
     const p = calib.panels[z]; if (!p) return;
     const [status, ok] = statusFor(e);
     if (p.status.textContent !== status) p.status.textContent = status;
@@ -228,6 +263,7 @@ export function updateCalib(dt, now) {
     if (e.calibrated && !e.manualRange && e.tests.left && e.tests.right && z === 0) $('#opt-angle-val').textContent = Math.round(e.grip.maxAngle) + '° (measured)';
   });
   $('#btn-calib-go').disabled = !camsReady();
+  if (handsLoading()) drawLoading(g, W, cv.height, secs);
   holdToStart(dt);
 }
 

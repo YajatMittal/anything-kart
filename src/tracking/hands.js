@@ -24,6 +24,19 @@ export class Hands {
     // maps MediaPipe's coordinates (whole camera picture) to the game's 4:3 view; identity until a frame is sent
     this.map = { ox: 0, oy: 0, kx: 1, ky: 1 }; this.sentMap = this.map;
     this.ctx = this.canvas.getContext('2d');
+    // loading progress, for the lock-on screen: bytes downloaded, then a short start-up
+    this.load = { loaded: 0, total: 0, starting: false, t0: 0, rate: 0 };
+  }
+
+  // Seconds of loading left (null while there isn't enough to go on yet), and how far along it is.
+  get loadingLeft() {
+    const L = this.load, secs = performance.now() / 1000 - L.t0;
+    if (L.starting) return { frac: 1, secs: null };
+    const frac = L.total ? Math.min(0.99, L.loaded / L.total) : 0;
+    if (!L.total || L.loaded < 200000 || secs < 0.4) return { frac, secs: null };
+    const rate = L.loaded / secs;
+    L.rate = L.rate ? L.rate * 0.9 + rate * 0.1 : rate;                     // smoothed, so the countdown doesn't jump around
+    return { frac, secs: (L.total - L.loaded) / L.rate + 1.2 };            // + about a second to start up
   }
 
   start(numHands) {
@@ -34,11 +47,17 @@ export class Hands {
     } catch (e) { this.failed = true; console.warn('Hand tracking unavailable:', e); return; }
     this.worker.onmessage = (e) => this.onMessage(e.data);
     this.worker.onerror = (e) => { this.failed = true; this.busy = false; console.warn('Hand tracking unavailable:', e.message); };
+    this.load.t0 = performance.now() / 1000;
     this.worker.postMessage({ type: 'init', numHands });
   }
 
   onMessage(m) {
-    if (m.type === 'ready') { this.ready = true; this.delegate = m.delegate || '?'; return; }
+    if (m.type === 'progress') { if (m.starting) this.load.starting = true; else { this.load.loaded = m.loaded; this.load.total = m.total; } return; }
+    if (m.type === 'ready') {
+      this.ready = true; this.delegate = m.delegate || '?';
+      for (const e of this.targets) e.ht?.reset();    // start following hands fresh, now that results come quickly
+      return;
+    }
     if (m.type === 'failed') { this.failed = true; console.warn('Hand tracking unavailable:', m.error); return; }
     if (m.type === 'result') {
       this.busy = false; this.results++;
