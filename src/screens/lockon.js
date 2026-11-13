@@ -169,11 +169,13 @@ function drawHandGuides(g, s, e, col, secs) {
   for (const dx of [-0.2, 0.2]) { g.beginPath(); g.arc((zc + dx * w) * s, y * s, r * s, 0, Math.PI * 2); g.stroke(); }
   g.restore();
   g.font = '20px "Lilita One", system-ui, sans-serif'; g.textAlign = 'center'; g.fillStyle = '#fff'; g.shadowColor = '#000'; g.shadowBlur = 6;
-  g.fillText('Hold your hands up here', zc * s, (y - r - 16) * s); g.shadowBlur = 0;
+  const loading = !hands.ready && !hands.failed;
+  g.fillText(loading ? `Loading hand tracking${'.'.repeat(1 + Math.floor(secs * 2) % 3)}` : 'Hold your hands up here', zc * s, (y - r - 16) * s); g.shadowBlur = 0;
 }
 
 // What the player should do next, and whether they are ready.
 function statusFor(e) {
+  if (!hands.ready && !hands.failed) return ['Loading hand tracking… (only slow the first time)', false];
   if (!e.calibrated) {
     if (e.phase === PHASE.SETTLE) return ['Found your hands! Get comfortable…', false];
     if (e.phase === PHASE.HOLD) return [`Hold steady… (${Math.round(e.holdProgress * 100)}%)`, false];

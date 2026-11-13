@@ -18,6 +18,8 @@ async function init(numHands) {
     minHandDetectionConfidence: 0.5, minHandPresenceConfidence: 0.4, minTrackingConfidence: 0.4,
   });
   try { tracker = await make('GPU'); delegate = 'GPU'; } catch { tracker = await make('CPU'); delegate = 'CPU'; }
+  // the number of players may have changed while it was loading (it starts loading early)
+  if (hands !== numHands) await tracker.setOptions({ numHands: hands });
 }
 
 self.onmessage = async (e) => {

@@ -4,7 +4,7 @@ import { TRACKS, Track } from '../race/tracks.js';
 import { CHARACTERS, charById } from '../race/characters.js';
 import { INPUT_LABELS, INPUT_HELP } from '../input/input.js';
 import { ICON } from '../ui/icons.js';
-import { $, $$, TOUCH, app, settings, save, sound, input, portrait, showScreen, fitMenus } from '../app.js';
+import { $, $$, TOUCH, app, settings, save, sound, input, hands, camCount, portrait, showScreen, fitMenus } from '../app.js';
 import { startFlow } from '../flow.js';
 
 export function renderLobby() {
@@ -40,6 +40,9 @@ export function renderLobby() {
   $$('[data-diff]').forEach((b) => b.onclick = () => { settings.difficulty = b.dataset.diff; sound.play('click'); save(); renderLobby(); });
   validate();
   fitMenus();
+  // Hand tracking takes a few seconds to download and start the first time, so camera players get
+  // it loading here, in the background, while they choose their racer and track.
+  if (camCount() && app.state === 'lobby') hands.start(camCount() * 2);
 }
 
 const previewCache = new Map();
