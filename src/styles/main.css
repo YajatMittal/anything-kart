@@ -166,8 +166,9 @@ body.ready #gl { opacity: 1; }
 .badge:empty { display: none; }
 
 /* ---------- overlays ---------- */
-.overlay { position: fixed; inset: 0; display: none; place-items: center; background: rgba(22, 48, 43, .6); backdrop-filter: blur(5px); z-index: 30; overflow-y: auto; padding: 16px; }
+.overlay { position: fixed; inset: 0; display: none; background: rgba(22, 48, 43, .6); backdrop-filter: blur(5px); z-index: 30; overflow-y: auto; padding: 16px; }
 .overlay.active { display: grid; }
+.overlay > .modal { margin: auto; }   /* centred, but scrolls from the top if taller than the screen */
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 2; width: 100%; height: 100%; }
 .modal { position: relative; z-index: 3; background: var(--paper); border: 3px solid var(--line); border-radius: 24px; padding: 20px 26px; min-width: 320px; display: flex; flex-direction: column; gap: 10px; text-align: center; box-shadow: 0 8px 0 var(--line); }
 .modal.wide { width: min(640px, 94vw); }
@@ -193,7 +194,7 @@ body.ready #gl { opacity: 1; }
 .rtable .tag { font-size: 11px; padding: 1px 6px; border-radius: 6px; margin-left: 6px; color: #fff; }
 .record { color: var(--red); font-weight: 900; }
 
-#toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(120px); background: var(--paper); color: var(--ink); border: 3px solid var(--line); padding: 8px 18px; border-radius: 12px; z-index: 50; transition: transform .3s; pointer-events: none; }
+#toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(120px); background: var(--paper); color: var(--ink); border: 3px solid var(--line); padding: 8px 18px; border-radius: 12px; z-index: 50; max-width: min(560px, 92vw); text-align: center; transition: transform .3s; pointer-events: none; }
 #toast.show { transform: translateX(-50%) translateY(0); }
 #file-warning { display: none; position: fixed; inset: 0; z-index: 99; background: #16302b; color: #fff; place-items: center; text-align: center; padding: 30px; font-size: 18px; }
 
@@ -334,7 +335,10 @@ body.touch .hud-pause { display: grid; }
   .step { width: 76px; font-size: 12px; } .step .portrait.lg { width: 42px; height: 42px; }
   .p1 .block { height: 30px; font-size: 17px; } .p2 .block { height: 22px; font-size: 15px; } .p3 .block { height: 16px; font-size: 13px; }
   .stats div { padding: 1px 8px; min-width: 76px; } .stats b { font-size: 15px; } .stats span { font-size: 10px; }
-  #results-table { display: none; }
+  #overlay-results .modal.wide { width: min(760px, 96vw); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); grid-template-areas: '. table' 'title table' 'podium table' 'stats table' 'row table' '. table'; grid-template-rows: 1fr auto auto auto auto 1fr; align-content: center; row-gap: 6px; column-gap: 14px; max-height: calc(100dvh - 16px); }
+  #results-title { grid-area: title; } #results-podium { grid-area: podium; } #results-stats { grid-area: stats; } #overlay-results .row { grid-area: row; }
+  #results-table { grid-area: table; overflow-y: auto; max-height: calc(100dvh - 40px); align-self: center; }
+  .rtable td { padding: 1px 5px; font-size: 13px; } .rtable .pl { font-size: 15px; width: 24px; } .rtable .em { width: 30px; } .rtable .portrait.sm { width: 24px; height: 24px; }
   .vh-item { left: 9px; top: 9px; } .vh-item .slot { width: 52px; height: 52px; border-radius: 13px; padding: 5px; border-width: 3px; }
   .item-name { display: none; }
   .vh-cam { left: 70px; top: 8px; } .vh-cam .wheel { width: 42px; height: 42px; } .vh-cam .cam-state { font-size: 10px; } .vh-cam .g { display: none; }

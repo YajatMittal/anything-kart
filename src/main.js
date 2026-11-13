@@ -25,8 +25,11 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // ------------------------------------------------------------------ full screen and sound
-// Full screen: the button (title, setup, pause menu) or the F key. Hidden where the browser
-// doesn't allow it (iPhone Safari only allows it for videos).
+// Full screen: the button (title, setup, pause menu) or the F key. iPhones don't let websites go
+// full screen, but a game added to the home screen opens full screen, so there the button says how.
+// Opened from the home screen it's already full screen, so the button is hidden.
+const IPHONE = /iPhone|iPod/.test(navigator.userAgent);
+const INSTALLED = navigator.standalone === true || !!window.matchMedia?.('(display-mode: standalone)').matches;
 const FS_ICON = {
   enter: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
   exit: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>',
@@ -34,7 +37,10 @@ const FS_ICON = {
 const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement;
 const fsSupported = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
 function toggleFullscreen() {
-  if (!fsSupported) return;
+  if (!fsSupported) {
+    if (IPHONE) toast('To play full screen on iPhone: tap Share, then "Add to Home Screen", and open Anything Kart from your home screen', 6000);
+    return;
+  }
   const el = document.documentElement;
   if (fsElement()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
   else (el.requestFullscreen || el.webkitRequestFullscreen).call(el)?.catch?.(() => toast("Full screen isn't available here", 1600));
@@ -42,7 +48,7 @@ function toggleFullscreen() {
 function syncFullscreen() {
   const on = !!fsElement();
   $$('[data-fs]').forEach((b) => {
-    b.hidden = !fsSupported;
+    b.hidden = INSTALLED || !(fsSupported || IPHONE);
     if (b.hasAttribute('data-fs-text')) b.textContent = on ? 'Exit full screen (F)' : 'Full screen (F)';
     else { b.innerHTML = on ? FS_ICON.exit : FS_ICON.enter; b.title = on ? 'Exit full screen (F)' : 'Full screen (F)'; }
   });
