@@ -534,9 +534,13 @@ export class Race {
     if (this.attract || !isFinite(this.laps)) return;
     if (k.lap > this.laps && !k.finished) {
       k.finished = true; k.finishTime = this.time; this.finishOrder.push(k);
+      k.place = this.finishOrder.length;   // finishers are placed in the order they cross the line
       if (k.human) {
         this.sound.play('finish');
         this.hud?.flash(k, k.place === 1 ? 'YOU WIN!' : ordinal(k.place) + '!', 'big');
+        // Racing with friends: everyone still racing sees who just finished, and where.
+        const name = `P${k.player + 1}`;
+        for (const o of this.humans) if (o !== k && !o.finished) this.hud?.flash(o, k.place === 1 ? `${name} WINS!` : `${name} finished ${ordinal(k.place)}`, 'blue');
       }
       return;
     }

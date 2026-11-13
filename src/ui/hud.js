@@ -36,9 +36,10 @@ export class Hud {
       lap: el('vh-lap'), time: el('vh-time'), place: el('vh-place'), acorns: el('vh-acorns'),
       msg: el('vh-msg'), wrong: el('vh-wrong', 'WRONG WAY'), danger: el('vh-danger', 'LAST PLACE: PASS SOMEONE!'),
       speed: el('vh-speed', '<i></i>'), gates: el('vh-gates'),
+      done: el('vh-done', '<b></b><span>FINISHED</span><small class="t"></small><small class="w">Waiting for the others…</small>'),
     };
     const top = el('vh-topright'); top.append(parts.lap, parts.time, parts.gates);
-    box.append(parts.item, top, parts.place, parts.acorns, parts.speed, parts.msg, parts.wrong, parts.danger);
+    box.append(parts.item, top, parts.place, parts.acorns, parts.speed, parts.msg, parts.wrong, parts.danger, parts.done);
     if (multi) {
       const tag = el('vh-tag', `<span>P${k.player + 1}</span>${k.ch.portrait ? `<img alt="" src="${k.ch.portrait}">` : ''}${k.name}`);
       tag.style.background = PLAYER_COLORS[k.player]; box.appendChild(tag);
@@ -103,6 +104,15 @@ export class Hud {
       const danger = race.mode === 'knockout' && !k.eliminated && race.alive.length > 1 && k.place === race.alive.length && race.koTimeLeft < 6;
       h.danger.classList.toggle('show', danger);
       h.box.classList.toggle('spectating', k.eliminated);
+      // Finished while friends are still racing: a card with your place stays up until the end.
+      const done = k.finished && race.humans.length > 1 && !race.humans.every((o) => o.finished);
+      this.set(h, 'done', done ? k.place : 0, (p) => {
+        h.box.classList.toggle('finished', !!p);
+        if (!p) return;
+        h.done.querySelector('b').innerHTML = p === 1 ? 'YOU WIN!' : `${p}<sup>${ordinal(p).slice(-2)}</sup>`;
+        h.done.dataset.p = Math.min(p, 4);
+        h.done.querySelector('.t').textContent = fmtTime(k.finishTime);
+      });
       if (h.cam) {
         const e = k.controller.engine, o = e?.output, live = !!e?.usable;
         h.wheel.style.transform = `rotate(${(k.input?.steer || 0) * 90}deg)`;

@@ -244,6 +244,17 @@ body.ready #gl { opacity: 1; }
 @keyframes blink { to { opacity: .55; } }
 .vh-tag { position: absolute; left: 50%; top: 9px; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; padding: 2px 11px 2px 6px; border-radius: 12px; font-size: 16px; -webkit-text-stroke: 0; text-shadow: none; border: 2px solid var(--ink); white-space: nowrap; }
 .vh-tag img { width: 26px; height: 26px; }
+.vh-done { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: rgba(20, 24, 40, .45); text-align: center; }
+.vh.finished .vh-done { display: flex; animation: doneIn .35s ease-out; }
+.vh.finished .vh-place, .vh.finished .vh-item, .vh.finished .vh-speed, .vh.finished .vh-cam, .vh.finished .vh-wrong { visibility: hidden; }
+.vh-done b { font-size: 84px; line-height: 1; color: #fff; }
+.vh-done b sup { font-size: .4em; vertical-align: top; position: relative; top: .25em; margin-left: 2px; }
+.vh-done[data-p="1"] b { color: var(--gold); } .vh-done[data-p="2"] b { color: #dbe6e2; } .vh-done[data-p="3"] b { color: #ec9b5f; }
+.vh-done span { font-size: 30px; color: #fff; letter-spacing: .04em; }
+.vh-done .t { font-size: 22px; color: #fff; }
+.vh-done .w { font-size: 16px; color: #fff; opacity: .85; margin-top: 8px; -webkit-text-stroke: 0; text-shadow: 0 2px 0 var(--ink); font-family: Nunito, sans-serif; font-weight: 800; }
+.vh.small .vh-done b { font-size: 54px; } .vh.small .vh-done span { font-size: 22px; } .vh.small .vh-done .t { font-size: 16px; }
+@keyframes doneIn { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
 .vh.spectating::after { content: "OUT: spectating"; position: absolute; left: 50%; top: 42%; transform: translateX(-50%); font-size: 30px; color: var(--red); }
 .vh-cam { position: absolute; left: 106px; top: 16px; display: flex; align-items: center; gap: 8px; -webkit-text-stroke: 0; text-shadow: none; }
 .vh-cam .wheel { width: 62px; height: 62px; color: #fff; filter: drop-shadow(0 2px 0 var(--ink)); }
