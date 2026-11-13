@@ -1,7 +1,7 @@
 // The camera: one webcam stream, turned into small frames the steering system analyses.
 //
 // Every new camera frame is mirrored (so it behaves like a mirror) and shrunk to 320x240 for
-// the camera views. Hand tracking (hands.js) reads the camera itself; each player's
+// the steering maths; the camera views draw the full camera picture so they stay sharp. Hand tracking (hands.js) reads the camera itself; each player's
 // SteeringEngine (js/steering/engine.js) is updated once per new frame. Nothing leaves the computer.
 
 export const PW = 320, PH = 240;
@@ -93,7 +93,10 @@ export class Vision {
       stream = this.fake.stream;
     } else {
       if (!navigator.mediaDevices?.getUserMedia) throw new Error('This browser cannot reach the camera here. Open the game from its secure https:// link.');
-      stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, audio: false });
+      // Laptops ask for 720p so the camera views look sharp (tracking still uses a small copy);
+      // phones keep 640x480, where speed and battery matter more and the views are small.
+      const hd = !matchMedia('(pointer: coarse)').matches;
+      stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: hd ? 1280 : 640 }, height: { ideal: hd ? 720 : 480 }, facingMode: 'user' }, audio: false });
     }
     // one stream for everything; if the camera is unplugged or taken away, say so
     this.cameraLost = false;
@@ -123,7 +126,7 @@ export class Vision {
     const vw = src.videoWidth || src.width, vh = src.videoHeight || src.height;
     let sx = 0, sy = 0, sw = vw, sh = vh;
     if (vw / vh > 4 / 3) { sw = vh * 4 / 3; sx = (vw - sw) / 2; } else { sh = vw * 3 / 4; sy = (vh - sh) / 2; }
-    ctx.save(); if (this.flip) ctx.setTransform(-1, 0, 0, 1, w, 0); ctx.drawImage(src, sx, sy, sw, sh, 0, 0, w, h); ctx.restore();
+    ctx.save(); if (this.flip) { ctx.translate(w, 0); ctx.scale(-1, 1); } ctx.drawImage(src, sx, sy, sw, sh, 0, 0, w, h); ctx.restore();
   }
 
   // Analyse the newest camera frame, if there is one. Only ever the newest: frames are never

@@ -4,7 +4,7 @@ import { Race, PLAYER_COLORS } from './race/race.js';
 import { TRACKS } from './race/tracks.js';
 import { charById } from './race/characters.js';
 import { TRACK } from './steering/config.js';
-import { drawTracking } from './steering/overlay.js';
+import { drawTracking, sharpCanvas } from './steering/overlay.js';
 import { $, $$, QUALITY, app, settings, sound, input, vision, renderer, tuning, camPlayers, camCount, toast, showScreen, keepAwake } from './app.js';
 import { renderLobby, validate } from './screens/lobby.js';
 import { enterCalib, recenterAll } from './screens/lockon.js';
@@ -133,7 +133,7 @@ export function watchTracking(dt) {
   if (app.state !== 'paused' || !lost.auto) return;
   const cps = active.map((a) => a.p), cols = cps.map((p) => PLAYER_COLORS[p.i]);
   const cam = $('#lost-cam');
-  drawTracking(cam.getContext('2d'), vision, es, cam.width, cam.height, { level: 'calib', colors: cols, tuning });
+  drawTracking(sharpCanvas(cam, 320, 240), vision, es, 320, 240, { level: 'calib', colors: cols, tuning });
   const back = (e) => e.track.live || e.state === TRACK.REACQUIRING;
   if (lost.countdown === null) {
     if (!vision.cameraLost && es.every((e) => e.track.live || e.track.readyToResume)) lost.countdown = 1.5;

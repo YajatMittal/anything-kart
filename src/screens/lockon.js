@@ -7,7 +7,7 @@ import { CameraController } from '../input/input.js';
 import { PW, PH } from '../tracking/vision.js';
 import { SteeringEngine } from '../steering/engine.js';
 import { PHASE } from '../steering/config.js';
-import { drawTracking } from '../steering/overlay.js';
+import { drawTracking, sharpCanvas } from '../steering/overlay.js';
 import { ICON } from '../ui/icons.js';
 import { $, $$, TOUCH, FAKE, app, settings, save, sound, input, vision, hands, tuning, camPlayers, portrait, toast, showScreen, fitMenus, keepAwake } from '../app.js';
 import { launchRace, buildCfg, quitToLobby, setPause, stopAttract } from '../flow.js';
@@ -228,11 +228,11 @@ export function updateCalib(dt, now) {
   vision.update();
   hands.update(now);
   vision.heartbeat(now / 1000);
-  const cv = $('#calib-canvas'), g = cv.getContext('2d'), W = cv.width, s = W / PW;
+  const cv = $('#calib-canvas'), W = 640, H = 480, g = sharpCanvas(cv, W, H), s = W / PW;
   if (vision.cameraLost) { $('#calib-msg').innerHTML = 'The camera stopped. <button class="btn" id="btn-cam-retry">Start it again</button>'; $('#btn-cam-retry').onclick = () => enterCalib(calib.resume); return; }
   if (!vision.running) return;
   const cols = camPlayers().map((p) => PLAYER_COLORS[p.i]);
-  drawTracking(g, vision, vision.engines, W, cv.height, { level: debug.on ? 'debug' : 'calib', colors: cols, tuning });
+  drawTracking(g, vision, vision.engines, W, H, { level: debug.on ? 'debug' : 'calib', colors: cols, tuning });
   const secs = now / 1000;
   vision.engines.forEach((e, z) => {
     const out = e.output;
@@ -263,7 +263,7 @@ export function updateCalib(dt, now) {
     if (e.calibrated && !e.manualRange && e.tests.left && e.tests.right && z === 0) $('#opt-angle-val').textContent = Math.round(e.grip.maxAngle) + '° (measured)';
   });
   $('#btn-calib-go').disabled = !camsReady();
-  if (handsLoading()) drawLoading(g, W, cv.height, secs);
+  if (handsLoading()) drawLoading(g, W, H, secs);
   holdToStart(dt);
 }
 

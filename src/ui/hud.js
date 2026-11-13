@@ -1,6 +1,6 @@
 import { ITEMS, ROULETTE, PLAYER_COLORS, fmtTime, ordinal } from '../race/race.js';
 import { ICON } from './icons.js';
-import { drawTracking } from '../steering/overlay.js';
+import { drawTracking, sharpCanvas } from '../steering/overlay.js';
 
 const el = (cls, html = '', tag = 'div') => { const e = document.createElement(tag); e.className = cls; e.innerHTML = html; return e; };
 
@@ -180,7 +180,7 @@ export class Hud {
   drawPip() {
     const v = this.deps.vision; if (!v?.running) return;
     // the small camera view: what the tracking sees (outline, hands, a few points) and its status
-    drawTracking(this.pip.getContext('2d'), v, v.engines, this.pip.width, this.pip.height, { level: 'pip', debug: !!this.deps.debug?.(), colors: this.deps.camColors?.() });
+    drawTracking(sharpCanvas(this.pip, 240, 180), v, v.engines, 240, 180, { level: 'pip', debug: !!this.deps.debug?.(), colors: this.deps.camColors?.() });
   }
 
   flash(k, text, cls = '') {

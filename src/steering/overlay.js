@@ -137,11 +137,23 @@ function banner(ctx, e, x0, x1, top) {
   if (n) { ctx.font = '800 12px system-ui, sans-serif'; ctx.fillStyle = '#0d7f70'; ctx.textAlign = 'left'; ctx.fillText(`STEP ${n} / ${e.steps.length}`, cx - bw / 2 + 12, y + 17); }
 }
 
+// A camera view canvas sized to the screen's real pixels, so it isn't stretched and blurry.
+// Drawing code keeps working in w x h (e.g. 640x480); the canvas just has more pixels behind it.
+export function sharpCanvas(cv, w, h) {
+  const shown = cv.clientWidth || w;
+  const k = Math.max(1, Math.min(3, Math.round(shown * (window.devicePixelRatio || 1) / w * 4) / 4));
+  if (cv.width !== Math.round(w * k)) { cv.width = Math.round(w * k); cv.height = Math.round(h * k); }
+  const g = cv.getContext('2d'); g.setTransform(k, 0, 0, k, 0, 0);
+  return g;
+}
+
 // engines: SteeringEngine[]. opts: { level, colors, tuning }
 export function drawTracking(ctx, vision, engines, w, h, opts = {}) {
   if (!vision.running) return;
   const level = opts.level || 'calib', debug = level === 'debug' || opts.debug, pip = level === 'pip';
-  ctx.drawImage(vision.canvas, 0, 0, w, h);
+  // the camera's own picture (sharp); the small 320x240 copy only if there's no live video (tests)
+  const vid = vision.video;
+  if (vid.readyState >= 2 && vid.videoWidth) vision.drawMirrored(ctx, w, h); else ctx.drawImage(vision.canvas, 0, 0, w, h);
   const sx = w / PW, sy = h / PH, colors = opts.colors || ['#ff4757', '#1e90ff'];
   if (engines.length === 2) {
     ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.setLineDash([8, 6]); ctx.lineWidth = 2;
