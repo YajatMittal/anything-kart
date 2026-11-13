@@ -30,7 +30,7 @@ export class Hands {
     if (this.worker) { if (numHands !== this.numHands) { this.numHands = numHands; this.worker.postMessage({ type: 'hands', numHands }); } return; }
     this.numHands = numHands;
     try {
-      this.worker = new Worker('src/tracking/hands-worker.js');
+      this.worker = new Worker(new URL('./hands-worker.js', import.meta.url));
     } catch (e) { this.failed = true; console.warn('Hand tracking unavailable:', e); return; }
     this.worker.onmessage = (e) => this.onMessage(e.data);
     this.worker.onerror = (e) => { this.failed = true; this.busy = false; console.warn('Hand tracking unavailable:', e.message); };

@@ -1,6 +1,6 @@
 // Shared by every screen: the renderer, camera, hand tracker, input and sound, the saved
 // settings, the app's current state, and a few small page helpers.
-import * as THREE from '../vendor/three/three.module.js';
+import * as THREE from 'three';
 import { Input } from './input/input.js';
 import { Vision } from './tracking/vision.js';
 import { Hands } from './tracking/hands.js';

@@ -1,4 +1,4 @@
-import * as THREE from '../../vendor/three/three.module.js';
+import * as THREE from 'three';
 import { Track, TRACKS } from './tracks.js';
 import { World } from './world.js';
 import { Kart, CHARACTERS, BASE_MAX } from './kart.js';

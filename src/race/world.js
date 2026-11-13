@@ -1,4 +1,4 @@
-import * as THREE from '../../vendor/three/three.module.js';
+import * as THREE from 'three';
 
 // Everything is drawn from code (canvas textures + low-poly shapes) — no asset files.
 

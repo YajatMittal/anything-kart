@@ -1,10 +1,10 @@
 // Runs MediaPipe hand tracking on a background thread so it can never stall the race.
 self.module = { exports: {} };
 self.exports = self.module.exports;
-importScripts('../../vendor/mediapipe/vision_bundle_worker.js');
+importScripts('/mediapipe/vision_bundle_worker.js');   // served as-is from public/mediapipe/
 const { FilesetResolver, HandLandmarker } = self.module.exports;
 
-const base = new URL('../../vendor/mediapipe/', self.location.href).href;
+const base = new URL('/mediapipe/', self.location.href).href;
 let tracker = null, clock = 0, hands = 2, restarting = false, delegate = 'GPU';
 
 async function init(numHands) {

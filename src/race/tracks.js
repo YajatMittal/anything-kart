@@ -1,4 +1,4 @@
-import * as THREE from '../../vendor/three/three.module.js';
+import * as THREE from 'three';
 
 // Each track is a closed spline through [x, z] points.
 export const TRACKS = [

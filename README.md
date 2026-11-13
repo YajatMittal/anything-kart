@@ -6,21 +6,21 @@ Everything runs in the browser on the player's own device. Camera video is never
 
 ## Getting started
 
-Requirements: Python 3 (preinstalled on macOS) and a modern browser (Chrome, Edge, Safari or Firefox).
+Requirements: [Node.js](https://nodejs.org) 20 or newer and a modern browser (Chrome, Edge, Safari or Firefox).
 
 ```bash
-npm start
+npm install      # once, to download three.js and Vite
+npm run dev      # play locally at http://localhost:8000 (reloads as you edit)
 ```
 
-or, without Node:
+| Command | What it does |
+|---|---|
+| `npm run dev` | Local development server with instant reload |
+| `npm run build` | Builds the optimised site into `dist/` (this is what gets hosted) |
+| `npm run preview` | Serves the built `dist/` locally, to check it before deploying |
+| `npm run check` | Checks every JavaScript file for syntax errors |
 
-```bash
-python3 scripts/serve.py
-```
-
-Then open the address it prints. On macOS you can also double-click `scripts/start.command` (the first time, right-click it and choose Open).
-
-The game needs a small local server because browsers only allow the camera on `http://localhost` or `https://` pages. Phones need the game on a real `https://` site.
+Browsers only allow the camera on `http://localhost` or `https://` pages, so phones need the game on a real `https://` site.
 
 ## How to play
 
@@ -83,9 +83,9 @@ src/
   ui/                   in-race HUD and icons
   styles/               all styling
 assets/fonts/           fonts
-vendor/                 third-party libraries, unmodified (three.js, MediaPipe)
-scripts/                local development server
-tests/                  simulated-camera tests (not loaded by the game)
+public/mediapipe/       MediaPipe hand tracking (library, WebAssembly and model), served as-is
+tests/                  simulated-camera tests (development only, not part of the build)
+vite.config.js          build settings
 ```
 
 ### How the steering works (`src/steering/`)
@@ -115,7 +115,7 @@ The race only reads each camera player's output and never touches the camera cod
 
 ## Testing
 
-No webcam needed: open `http://localhost:8000/?fakecam` for a simulated camera (`?fakecam=2` for two players). Then, in the browser console:
+No webcam needed: run `npm run dev` and open `http://localhost:8000/?fakecam` for a simulated camera (`?fakecam=2` for two players). Then, in the browser console:
 
 ```js
 await (await import('/tests/brief.js')).brief()                   // steering and flick checks, one line each

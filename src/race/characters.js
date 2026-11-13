@@ -1,4 +1,4 @@
-import * as THREE from '../../vendor/three/three.module.js';
+import * as THREE from 'three';
 
 // The cast: original helmeted racers, modelled entirely in code. Each has a
 // helmet design you can recognise from behind, and eyes behind the visor that

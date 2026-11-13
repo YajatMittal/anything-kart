@@ -5,7 +5,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "python3 scripts/serve.py",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "check": "find src tests -name '*.js' -exec node --check {} ';'"
+  },
+  "dependencies": {
+    "three": "0.160.0"
+  },
+  "devDependencies": {
+    "vite": "^8.3.8"
   }
 }
