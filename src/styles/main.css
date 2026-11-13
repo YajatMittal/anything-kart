@@ -28,7 +28,8 @@ svg { display: block; width: 100%; height: 100%; }
 
 #gl { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; opacity: 0; transition: opacity .5s ease-out; }
 /* before the first 3D frame: a sky, so the title never sits on a blank screen */
-body:not(.ready) { background: linear-gradient(#7cc8ea, #bfe6f3 55%, #d9efe0); }
+/* While the 3D world is starting up, a soft picture of it shows instead (then the live scene fades in on top) */
+body { background: url('/poster.jpg') center / cover no-repeat, linear-gradient(#7cc8ea, #bfe6f3 55%, #d9efe0); }
 body.ready #gl { opacity: 1; }
 .title-cast:empty { min-height: 76px; }
 .title-cast .portrait { animation: cast-in .4s cubic-bezier(.3,1.5,.5,1) backwards, bob 2.2s ease-in-out .4s infinite; }
