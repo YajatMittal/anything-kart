@@ -131,7 +131,7 @@ function banner(ctx, e, x0, x1, top) {
   } else if (e.doneT > 0) { title = 'Nice!'; sub = e.stepKey ? `Next: ${STEP_TEXT[e.stepKey][0].toLowerCase()}` : ''; }
   else if (e.stepKey) { [title, sub] = STEP_TEXT[e.stepKey]; n = e.stepIndex + 1; }
   else if (e.startProgress > 0) { title = 'Starting…'; sub = 'Keep holding it up'; }
-  else { title = 'Raise it to start'; sub = 'Or press Space. In the race, flick it for items'; }
+  else { title = 'Raise it to start'; sub = 'Or press Space'; }
   if (e.track && !e.track.live && e.calibrated) { title = 'Show both hands'; sub = ''; }
   const w = x1 - x0, cx = (x0 + x1) / 2, bw = Math.min(w - 16, 340), bh = sub ? 64 : 44, y = top + 10;
   ctx.fillStyle = 'rgba(255,250,240,0.94)'; ctx.beginPath(); ctx.roundRect(cx - bw / 2, y, bw, bh, 14); ctx.fill();

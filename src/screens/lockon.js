@@ -135,7 +135,7 @@ $('#opt-dead').oninput = (e) => { settings.deadzone = +e.target.value; $('#opt-d
 $('#opt-sens').oninput = (e) => { settings.sensitivity = +e.target.value / 100; $('#opt-sens-val').textContent = e.target.value + '%'; save(); applyTuning(); };
 $('#opt-curve').oninput = (e) => { settings.curve = +e.target.value / 100; $('#opt-curve-val').textContent = e.target.value + '%'; save(); applyTuning(); };
 $('#opt-invert').onchange = (e) => { settings.invert = e.target.checked; save(); applyTuning(); };
-$('#opt-flick').onchange = (e) => { settings.flickSens = e.target.value; save(); applyTuning(); toast('Try a flick: the ring shows FLICK! when it counts', 2000); };
+$('#opt-flick').onchange = (e) => { settings.flickSens = e.target.value; save(); applyTuning(); toast('Once locked on, try a flick: the ring shows FLICK! when it counts', 2200); };
 $('#opt-drift').onchange = (e) => { settings.autoDrift = e.target.checked; save(); applyTuning(); toast(e.target.checked ? 'Auto drift on: long hard turns slide for a mini-boost' : 'Auto drift off', 1800); };
 // Braking by lowering: switching it on adds the "lower it" move to the lock-on (to learn how low).
 $('#opt-brake').onchange = (e) => { settings.brakeGesture = e.target.checked; save(); applyTuning(); toast(e.target.checked ? 'Lowering it now brakes: show it how low in the lock-on' : 'Lowering no longer brakes', 2000); };
@@ -201,14 +201,16 @@ export function updateCalib(dt, now) {
     const out = e.output;
     if (e.justLocked) { e.justLocked = false; sound.play('lock'); }
     if (e.justPassed) { sound.play(e.canStart ? 'lap' : 'box'); e.justPassed = null; }
-    // Try flicks here: each one is shown on the ring. But a quick raise looks like a flick too, so wait
-    // a moment: if the hands then stay up, it was "raise it to start", not a flick.
+    // Once locked on, flicks can be tried here: each one is shown on the ring. Not during the turn
+    // steps (a quick turn there isn't a flick attempt). And a quick raise looks like a flick too, so
+    // wait a moment: if the hands then stay up, it was "raise it to start", not a flick.
     if (e.flickT !== e.flickSeen) {
       if (e.flickSeen !== undefined) e.flickPending = e.flickT;
       e.flickSeen = e.flickT;
     }
     if (e.flickPending !== undefined && e.now - e.flickPending > 0.25) {
-      if (!(e.zoneNow === 'raise' || e.startProgress > 0)) { e.flickShowT = performance.now() / 1000; sound.play('item'); }
+      const tryingFlicks = e.calibrated && !e.stepKey && e.doneT <= 0;
+      if (tryingFlicks && !(e.zoneNow === 'raise' || e.startProgress > 0)) { e.flickShowT = performance.now() / 1000; sound.play('item'); }
       e.flickPending = undefined;
     }
     if (!e.calibrated && !e.ht.L && !e.ht.R) drawHandGuides(g, s, e, cols[z], secs);
