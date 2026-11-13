@@ -10,6 +10,7 @@ import { renderLobby, validate } from './screens/lobby.js';
 import { enterCalib, recenterAll } from './screens/lockon.js';
 import { onEnd } from './screens/results.js';
 import { debug } from './debug.js';
+import { resetResolution } from './resolution.js';
 
 // ------------------------------------------------------------------ the demo race behind the menus
 export function startAttract() {
@@ -54,6 +55,7 @@ export function launchRace(cfg) {
   app.race?.dispose();
   app.lastCfg = cfg;
   sound.init();
+  resetResolution();                       // every race starts sharp
   const race = app.race = new Race(cfg, { sound, input, vision, renderer, quality: QUALITY, onEnd, onPause: () => setPause(true), debug: () => debug.on, camColors: () => camPlayers().map((q) => PLAYER_COLORS[q.i]) });
   if (race.hasCam) for (const e of vision.engines) e.start();
   hideLost();

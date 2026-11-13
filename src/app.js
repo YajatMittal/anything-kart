@@ -14,13 +14,16 @@ export const $$ = (s) => Array.from(document.querySelectorAll(s));
 export const params = new URLSearchParams(location.search);
 export const TOUCH = params.has('touch') || !!window.matchMedia?.('(pointer: coarse)').matches;
 export const SMALL = params.has('touch') || (TOUCH && Math.min(screen.width, screen.height) < 820);
-export const QUALITY = SMALL ? 'low' : 'high';
+// Phones get everything except the biggest shadow map; if one can't keep up, the resolution steps
+// down by itself (resolution.js). ?quality=low|medium|high overrides it, for testing.
+export const QUALITY = ['low', 'medium', 'high'].includes(params.get('quality')) ? params.get('quality') : SMALL ? 'medium' : 'high';
 export const FAKE = params.has('fakecam');
 document.body.classList.toggle('touch', TOUCH);
 
 // ------------------------------------------------------------------ renderer
-export const renderer = new THREE.WebGLRenderer({ canvas: $('#gl'), antialias: !SMALL, powerPreference: 'high-performance' });
-export const BASE_RATIO = Math.min(window.devicePixelRatio || 1, SMALL ? 1.25 : 1.5);
+export const renderer = new THREE.WebGLRenderer({ canvas: $('#gl'), antialias: QUALITY !== 'low', powerPreference: 'high-performance' });
+// the sharpest the race is drawn (phone screens are very dense, so they cap at 2x)
+export const BASE_RATIO = Math.min(window.devicePixelRatio || 1, QUALITY === 'low' ? 1.25 : SMALL ? 2 : 1.5);
 renderer.setPixelRatio(BASE_RATIO);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;

@@ -81,6 +81,7 @@ const noisy = (c, w, h, r, n, a, b, size = 2) => {
 export class World {
   constructor(track, quality = 'high') {
     this.track = track;
+    this.quality = quality;
     this.low = quality === 'low';
     const th = this.theme = THEMES[track.def.theme];
     const scene = this.scene = new THREE.Scene();
@@ -105,7 +106,7 @@ export class World {
     sun.castShadow = true;
     const R = Math.max(b.maxX - b.minX, b.maxZ - b.minZ) * 0.5 + 160;
     Object.assign(sun.shadow.camera, { left: -R, right: R, top: R, bottom: -R, near: 50, far: 1500 });
-    sun.shadow.mapSize.setScalar(this.low ? 1536 : 4096);
+    sun.shadow.mapSize.setScalar(this.low ? 1536 : this.quality === 'medium' ? 2048 : 4096);
     sun.shadow.bias = -0.0006;
     this.scene.add(sun, sun.target);
   }

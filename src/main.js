@@ -3,12 +3,13 @@
 import { CHARACTERS, makePortraits } from './race/characters.js';
 import { TRACK, PHASE, CFG } from './steering/config.js';
 import { ICON } from './ui/icons.js';
-import { $, $$, BASE_RATIO, app, settings, save, sound, input, vision, hands, renderer, tuning, camCount, portrait, toast, fitMenus, keepAwake } from './app.js';
+import { $, $$, app, settings, save, sound, input, vision, hands, renderer, tuning, camCount, portrait, toast, fitMenus, keepAwake } from './app.js';
 import { goLobby, startFlow, launchRace, buildCfg, setPause, applyPip, startAttract, watchTracking, lost, hideLost } from './flow.js';
 import { renderLobby, claimPad } from './screens/lobby.js';
 import { enterCalib, updateCalib, calibGo, recenterAll } from './screens/lockon.js';
 import './screens/results.js';
 import { debug, toggleDebug, updateDebug } from './debug.js';
+import { watchSpeed } from './resolution.js';
 import { inject as startAnalytics } from '@vercel/analytics';
 
 // Anonymous visitor counts (Vercel Web Analytics): no cookies, nothing personal, nothing from the
@@ -130,15 +131,6 @@ function fitScreen() {
 window.addEventListener('resize', fitScreen);
 window.addEventListener('orientationchange', () => setTimeout(fitScreen, 250));
 
-// If the race can't hold a smooth frame rate, draw fewer pixels until it can.
-const speed = { t: 0, n: 0, step: 0, steps: [1, 0.82, 0.68, 0.56] };
-function watchSpeed(dt) {
-  speed.t += dt; speed.n++;
-  if (speed.t < 3) return;
-  const slow = speed.t / speed.n > 0.036;
-  speed.t = 0; speed.n = 0;
-  if (slow && speed.step < speed.steps.length - 1) renderer.setPixelRatio(BASE_RATIO * speed.steps[++speed.step]);
-}
 
 // ------------------------------------------------------------------ main loop
 let last = performance.now();
@@ -157,7 +149,7 @@ function tick(now) {
     }
     race.update(dt);
     race.render(renderer);
-    if (app.state === 'race' && race.phase === 'race') watchSpeed(dt);
+    if (app.state === 'race' && race.phase === 'race') watchSpeed(dt, race);
   } else if (attract) {
     attract.update(dt);
     attract.render(renderer);
