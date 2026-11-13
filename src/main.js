@@ -180,8 +180,20 @@ async function boot() {
   makePortraits();
   $('#title-cast').innerHTML = CHARACTERS.slice(0, 7).map((c) => portrait(c, 'md')).join('');
   if (app.state === 'lobby') renderLobby();
+  preloadHandTracking();
 }
 boot();
+
+// Hand tracking takes a few seconds to download and start the first time, so it starts loading in
+// the background as soon as the title screen is up: by the time a player has chosen a racer and
+// allowed the camera, it's usually ready. Skipped when the browser asks to save data, on very slow
+// connections, and when nobody is set to play by camera (it then loads from Race setup instead).
+function preloadHandTracking() {
+  const net = navigator.connection;
+  if (net?.saveData || /(^|-)2g$/.test(net?.effectiveType || '') || !camCount()) return;
+  const go = () => { if (!hands.worker) hands.start(camCount() * 2); };
+  if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 1500 }); else setTimeout(go, 500);
+}
 
 // For the tests and for debugging from the browser console.
 window.__ak = {

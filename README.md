@@ -43,7 +43,7 @@ In the race, **turn to steer** and **flick it** to use your item: a quick snap o
 
 Your lock-on lasts the whole race. If a hand is hidden for a moment, steering carries on from the other hand; if both hands leave, the race pauses and carries on when they're back.
 
-The first time, hand tracking takes a few seconds to download (about 22 MB). It starts loading as soon as you open Race setup, and the browser keeps it for next time.
+The first time, hand tracking takes a few seconds to download (about 10 MB). It starts loading in the background as soon as the title screen is up (unless the browser is saving data), so it's usually ready by the time you reach the lock-on, and the browser keeps it for next time.
 
 ### On a phone
 

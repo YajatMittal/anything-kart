@@ -40,9 +40,6 @@ export function renderLobby() {
   $$('[data-diff]').forEach((b) => b.onclick = () => { settings.difficulty = b.dataset.diff; sound.play('click'); save(); renderLobby(); });
   validate();
   fitMenus();
-  // Hand tracking takes a few seconds to download and start the first time, so camera players get
-  // it loading here, in the background, while they choose their racer and track.
-  if (camCount() && app.state === 'lobby') hands.start(camCount() * 2);
 }
 
 const previewCache = new Map();
@@ -177,6 +174,9 @@ function renderPlayers() {
   const add = $('#btn-add-player'); if (add) add.onclick = addPlayer;
   const pads = input.pads();
   $('#pad-status').textContent = pads.length ? `Controllers connected: ${pads.map((q) => q.id.split('(')[0].trim()).join(', ')}` : '';
+  // Hand tracking takes a few seconds to download and start the first time, so as soon as anyone
+  // is set to play by camera it starts loading in the background (if it isn't already).
+  if (camCount() && app.state === 'lobby') hands.start(camCount() * 2);
 }
 
 function addPlayer() {
