@@ -109,9 +109,19 @@ $$('[data-pause]').forEach((b) => b.onclick = () => {
 export const lost = { auto: false, countdown: null, shown: '' };
 export function hideLost() { lost.auto = false; $('#overlay-lost').classList.remove('active'); }
 
+// Only players still racing count: once you've finished, the camera losing you doesn't pause
+// the race for your friends.
+function racingCams(race) {
+  const cps = camPlayers();
+  return vision.engines.map((e, z) => ({ e, p: cps[z], k: race.humans.find((k) => k.controller?.engine === e) }))
+    .filter(({ k }) => !k?.finished && !k?.eliminated);
+}
+
 export function watchTracking(dt) {
-  const es = vision.engines, race = app.race;
-  if (!race || race.done || !es.length) return;
+  const race = app.race;
+  if (!race || race.done || !vision.engines.length) return;
+  const active = racingCams(race), es = active.map((a) => a.e);
+  if (!es.length) { if (lost.auto) resumeFromLost(); return; }   // every camera player has finished
   if (app.state === 'race') {
     if (es.some((e) => e.state === TRACK.PAUSED) || vision.cameraLost) {
       race.setPaused(true); app.state = 'paused'; lost.auto = true; lost.countdown = null; lost.shown = '';
@@ -121,7 +131,7 @@ export function watchTracking(dt) {
     return;
   }
   if (app.state !== 'paused' || !lost.auto) return;
-  const cps = camPlayers(), cols = cps.map((p) => PLAYER_COLORS[p.i]);
+  const cps = active.map((a) => a.p), cols = cps.map((p) => PLAYER_COLORS[p.i]);
   const cam = $('#lost-cam');
   drawTracking(cam.getContext('2d'), vision, es, cam.width, cam.height, { level: 'calib', colors: cols, tuning });
   const back = (e) => e.track.live || e.state === TRACK.REACQUIRING;
@@ -133,7 +143,7 @@ export function watchTracking(dt) {
     if (lost.countdown <= 0) return resumeFromLost();
   }
   const who = es.map((e, z) => ({ e, p: cps[z] })).filter(({ e }) => !back(e));
-  const names = cps.length > 1 ? who.map(({ p }) => `P${p.i + 1}`).join(' and ') : '';
+  const names = camCount() > 1 ? who.map(({ p }) => `P${p.i + 1}`).join(' and ') : '';
   let title, text;
   if (vision.cameraLost) { title = 'Camera disconnected'; text = 'Reconnect it, then choose Lock on again from the pause menu.'; }
   else if (lost.countdown !== null) { title = `Back in ${Math.ceil(lost.countdown / 0.5)}…`; text = 'Got you. Hold steady…'; }
