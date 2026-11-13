@@ -12,13 +12,13 @@ export const MODES = {
 };
 
 export const ITEMS = {
-  chili: { icon: 'chili', name: 'Hot Chili' },
-  chili3: { icon: 'chili3', name: 'Chili Pack', count: 3 },
-  mud: { icon: 'mud', name: 'Mud Pie' },
-  snowball: { icon: 'snowball', name: 'Snowball' },
-  bee: { icon: 'bee', name: 'Busy Bee' },
-  bubble: { icon: 'bubble', name: 'Bubble Shield' },
-  acorns: { icon: 'acorns', name: 'Acorn Bag' },
+  chili: { icon: 'chili', name: 'Hot Chili', desc: 'A quick speed boost' },
+  chili3: { icon: 'chili3', name: 'Chili Pack', count: 3, desc: 'Three boosts, one per flick' },
+  mud: { icon: 'mud', name: 'Mud Pie', desc: 'Dropped behind you: whoever drives in gets stuck' },
+  snowball: { icon: 'snowball', name: 'Snowball', desc: 'Thrown straight ahead: spins out whoever it hits' },
+  bee: { icon: 'bee', name: 'Busy Bee', desc: 'Chases the racer just ahead of you' },
+  bubble: { icon: 'bubble', name: 'Bubble Shield', desc: 'Blocks the next hit (8 seconds)' },
+  acorns: { icon: 'acorns', name: 'Acorn Bag', desc: 'Three acorns at once' },
 };
 export const ROULETTE = ['chili', 'mud', 'snowball', 'bee', 'bubble', 'acorns'];
 export const PLAYER_COLORS = ['#e63946', '#1d8fe0', '#23a65b', '#f08c00'];

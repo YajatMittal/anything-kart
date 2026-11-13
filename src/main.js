@@ -1,6 +1,7 @@
 // Anything Kart starts here: wires up the keys, gamepads, window and sound, runs the frame loop,
 // and boots the title screen. Each screen lives in src/screens/; moving between them is in flow.js.
 import { CHARACTERS, makePortraits } from './race/characters.js';
+import { ITEMS } from './race/race.js';
 import { TRACK, PHASE, CFG } from './steering/config.js';
 import { ICON } from './ui/icons.js';
 import { $, $$, app, settings, save, sound, input, vision, hands, renderer, tuning, camCount, portrait, toast, fitMenus, keepAwake } from './app.js';
@@ -19,6 +20,9 @@ if (import.meta.env.PROD) startAnalytics({ mode: 'production' });
 // ------------------------------------------------------------------ title and how to play
 $('#btn-play').onclick = () => goLobby();
 
+// The How to play card's item list, from the items themselves
+$('#help-items').innerHTML = Object.values(ITEMS).map((it) => `<div><span class="ic">${ICON[it.icon]}</span><span><b>${it.name}</b> ${it.desc}</span></div>`).join('')
+  + `<div class="acorn-row"><span class="ic">${ICON.acorn}</span><span><b>Acorns</b> on the track make you a little faster, up to 10. Getting hit drops 2.</span></div>`;
 function showHelp(on) { $('#overlay-help').classList.toggle('active', on); if (on) $('#overlay-help [data-help-close].btn')?.focus(); }
 $$('[data-help]').forEach((b) => b.onclick = () => { sound.play('click'); showHelp(true); });
 $$('[data-help-close]').forEach((b) => b.onclick = () => showHelp(false));
