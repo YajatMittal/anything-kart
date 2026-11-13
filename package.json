@@ -11,6 +11,7 @@
     "check": "find src tests -name '*.js' -exec node --check {} ';'"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "three": "0.160.0"
   },
   "devDependencies": {

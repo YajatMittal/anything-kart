@@ -9,6 +9,11 @@ import { renderLobby, claimPad } from './screens/lobby.js';
 import { enterCalib, updateCalib, calibGo, recenterAll } from './screens/lockon.js';
 import './screens/results.js';
 import { debug, toggleDebug, updateDebug } from './debug.js';
+import { inject as startAnalytics } from '@vercel/analytics';
+
+// Anonymous visitor counts (Vercel Web Analytics): no cookies, nothing personal, nothing from the
+// camera. Only on the live site, so local testing doesn't count.
+if (import.meta.env.PROD) startAnalytics({ mode: 'production' });
 
 // ------------------------------------------------------------------ title and how to play
 $('#btn-play').onclick = () => goLobby();
