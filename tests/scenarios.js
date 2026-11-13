@@ -42,7 +42,7 @@ export async function run(opts = {}) {
     took.push(`${k} ${n >= 200 ? 'NOT DONE' : (n / 30).toFixed(1) + 's'}`);
   }
   T.step(P(), 25);
-  out.tests = `asked in order: ${order.join(' → ')} · ${took.join(', ')} · can start ${e.canStart} · full turn ${Math.round(e.maxAngle)}° · lift line ${e.grip.liftOn.toFixed(2)} brake line ${e.grip.lowOn.toFixed(2)}`;
+  out.tests = `asked in order: ${order.join(' → ')} · ${took.join(', ')} · can start ${e.canStart} · full turn ${Math.round(e.maxAngle)}° · raise line ${e.grip.raiseOn.toFixed(2)} brake line ${e.grip.lowOn.toFixed(2)}`;
   const theta0 = e.grip.theta0, mid0 = { ...e.grip.mid0 };
   document.querySelector('#btn-calib-go').click(); T.step(P(), 150);
   out.race = `${ak.race?.phase} · ${o().trackingState}`;
@@ -55,25 +55,25 @@ export async function run(opts = {}) {
   out.fastTurns = `reach ${lo.toFixed(2)} … ${hi.toFixed(2)}`;
   T.step(P(), 20);
   let side = 0; for (let k = 0; k < 60; k++) { T.step(P({ mid: { x: 160 + 45 * Math.sin(k / 9), y: B.mid.y } })); side = Math.max(side, Math.abs(o().steering)); }
-  let body = 0, bb = false; for (let k = 0; k < 90; k++) { const s = 1 + 0.25 * Math.sin(k / 12); T.step(P({ mid: { x: 160 + 30 * Math.sin(k / 15), y: B.mid.y + 6 * Math.sin(k / 10) }, gap: B.gap * s, size: B.size * s })); body = Math.max(body, Math.abs(o().steering)); bb ||= o().lift || o().brake; }
-  out.handsMoveTogether = `sideways ${side.toFixed(2)} · leaning in/out ${body.toFixed(2)}, lift/brake ${bb}`;
+  let body = 0, bb = false; for (let k = 0; k < 90; k++) { const s = 1 + 0.25 * Math.sin(k / 12); T.step(P({ mid: { x: 160 + 30 * Math.sin(k / 15), y: B.mid.y + 6 * Math.sin(k / 10) }, gap: B.gap * s, size: B.size * s })); body = Math.max(body, Math.abs(o().steering)); bb ||= o().item || o().brake; }
+  out.handsMoveTogether = `sideways ${side.toFixed(2)} · leaning in/out ${body.toFixed(2)}, item/brake ${bb}`;
   T.step(P(), 20);
 
-  // ---- lift / brake
-  let lift = false, brake = false, sv = 0, flick = 0, lastZ = e.zoneNow;
-  { for (const f of [0.35, 0.7, 0.7, 0.35, 0, 0, 0, 0]) { T.step(P({ mid: upHL(f) })); lift ||= o().lift; sv = Math.max(sv, Math.abs(o().steering)); } }
+  // ---- item (a pop up) / brake
+  let item = false, brake = false, sv = 0, flick = 0, lastZ = e.zoneNow;
+  { for (const f of [0.35, 0.7, 0.7, 0.35, 0, 0, 0, 0]) { T.step(P({ mid: upHL(f) })); item ||= o().item; sv = Math.max(sv, Math.abs(o().steering)); } }
   T.step(P(), 15);
   for (let k = 0; k < 15; k++) { T.step(P({ mid: up(-0.48) })); brake ||= o().brake; sv = Math.max(sv, Math.abs(o().steering)); }
   T.step(P(), 15);
-  out.liftBrake = `lift ${lift} · brake ${brake} · steering moved ${sv.toFixed(2)} · back to neutral ${e.zoneNow === 'neutral'}`;
+  out.itemBrake = `item ${item} · brake ${brake} · steering moved ${sv.toFixed(2)} · back to neutral ${e.zoneNow === 'neutral'}`;
   const pu = B.size / B.gap;   // heights are in hand-lengths; up() takes hand spacings
   for (let k = 0; k < 60; k++) { T.step(P({ mid: up(-(e.grip.lowOn * pu + 0.02 * Math.sin(k * 1.7))), jitter: 1.5 })); if (e.zoneNow !== lastZ) { flick++; lastZ = e.zoneNow; } }
   out.boundary = `zone changes hovering at the brake line: ${flick}`;
   T.step(P(), 20);
-  let acc = false; for (let k = 0; k < 40; k++) { T.step(P({ theta: 30 * Math.sin(k / 6) })); acc ||= o().lift || o().brake; }
-  T.step(P({ theta: 20, mid: up(0.42) }), 14); const both = `${o().lift ? 'lift' : 'no lift'} + steering ${o().steering.toFixed(2)}`;
+  let acc = false; for (let k = 0; k < 40; k++) { T.step(P({ theta: 30 * Math.sin(k / 6) })); acc ||= o().item || o().brake; }
+  T.step(P({ theta: 20, mid: up(0.42) }), 14); const both = `${o().item ? 'item' : 'no item'} + steering ${o().steering.toFixed(2)}`;
   T.step(P(), 20);
-  out.turnVsHeight = `turning triggered lift/brake: ${acc} · turn while lifted: ${both}`;
+  out.turnVsHeight = `turning triggered item/brake: ${acc} · turn while lifted: ${both}`;
 
   // ---- someone else's hand appears (another person beside you)
   out.otherHands = track((k) => { const th = 12 * Math.sin(k / 8); return [P({ theta: th, extra: k > 5 ? [{ x: 25, y: 120, side: 'L', axis: -90 }, { x: 298, y: 150, side: 'R', axis: -90 }] : [] }), th]; }, 60);
@@ -114,8 +114,8 @@ export async function run(opts = {}) {
   for (let k = 0; k < 100; k++) { T.step(P({ seen: 'none', present: 'none' })); if ([0, 8, 14].includes(k)) tl3.push(`${(k + 1) * 33}ms steer ${o().steering.toFixed(2)} brake ${o().brake} ${o().trackingState}`); if (p3 === null && ak.race.paused) p3 = (k + 1) * 33; }
   out.bothGone = `${tl3.join(' | ')} · paused at ${p3} ms`;
   let at2 = null, fired = false, maxS = 0, pv2 = 0;
-  for (let k = 0; k < 110; k++) { T.step(P({ theta: 6, mid: up(0.42), gap: B.gap * 1.15, size: B.size * 1.15 })); fired ||= o().lift || o().brake; if (at2 === null && !ak.race.paused) at2 = k * 33; if (at2 !== null) { maxS = Math.max(maxS, Math.abs(o().steering - pv2)); } pv2 = o().steering; }
-  out.recovery = `resumed after ${at2} ms (came back held high, a bit closer) · lift/brake fired on return: ${fired} · max step ${maxS.toFixed(2)} · lock-on unchanged: ${e.grip.theta0 === theta0 && e.grip.mid0.y === mid0.y}`;
+  for (let k = 0; k < 110; k++) { T.step(P({ theta: 6, mid: up(0.42), gap: B.gap * 1.15, size: B.size * 1.15 })); fired ||= o().item || o().brake; if (at2 === null && !ak.race.paused) at2 = k * 33; if (at2 !== null) { maxS = Math.max(maxS, Math.abs(o().steering - pv2)); } pv2 = o().steering; }
+  out.recovery = `resumed after ${at2} ms (came back held high, a bit closer) · item/brake fired on return: ${fired} · max step ${maxS.toFixed(2)} · lock-on unchanged: ${e.grip.theta0 === theta0 && e.grip.mid0.y === mid0.y}`;
   T.step(P(), 30);
   out.afterRecovery = track((k) => { const th = 15 * Math.sin(k / 9); return [P({ theta: th }), th]; }, 60, 15);
 

@@ -124,7 +124,7 @@ export class CameraController {
     const live = o.trackingState === 'tracking' || o.trackingState === 'degraded';
     // No reliable signal: straight ahead and off the throttle (never a stale value, never the AI)
     if (!live) return { steer: o.steering, accel: 0.35, brake: 0, drift: false, item: keyItem, lost: true, neutral: true };
-    return { steer: o.steering, accel: o.brake ? 0 : 1, brake: o.brake ? 1 : 0, drift: false, item: e.consumeLift() || keyItem };
+    return { steer: o.steering, accel: o.brake ? 0 : 1, brake: o.brake ? 1 : 0, drift: false, item: e.consumeItem() || keyItem };
   }
   rumble() {}
 }

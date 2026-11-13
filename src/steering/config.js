@@ -46,13 +46,13 @@ export const CFG = {
   steerMinCutoff: 1.5,      // one-euro filter for the steering angle
   steerBeta: 0.08,
   vertTau: 0.06,            // s: smoothing of the height
-  liftDelay: 0.08,          // s in the lift zone before lift activates
+  raiseDelay: 0.08,          // s in the raise zone before it counts (raise to start)
   brakeDelay: 0.12,         // s in the brake zone before brake activates
   zoneExit: 0.45,           // a zone is left at this fraction of its entry threshold (hysteresis)
   // Item and brake lines: fixed, in hand-lengths (palm length, wrist to middle knuckle) above or
   // below the lock-on height. Hand-lengths are the same whatever is being held (a remote or a
   // tablet) and whether the player is near or far, so "raise it about a hand" always works.
-  liftOn: -0.8,             // raise this far: item (negative = up)
+  raiseOn: -0.8,             // raise this far to count as raised (negative = up)
   // Flick (uses the item): a quick snap both hands make together, in any of three ways. Each is
   // [speed that starts it per second, how far it must go, then back within flickWindow].
   flickPop: [1.6, 0.4],     // the middle between the palms pops up (or down), in hand-lengths
@@ -73,7 +73,7 @@ export const CFG = {
 
 export function emptyOutput() {
   return {
-    steering: 0, lift: false, brake: false, verticalPosition: 0, confidence: 0,
+    steering: 0, item: false, brake: false, verticalPosition: 0, confidence: 0,
     trackingState: TRACK.LOST, activeSignals: { leftHand: false, rightHand: false },
   };
 }

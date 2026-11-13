@@ -14,7 +14,7 @@ import { TRACK, PHASE, STEPS, CFG, D2R } from './config.js';
 
 const BONES = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [0, 17], [17, 18], [18, 19], [19, 20]];
 const GREEN = '#2ee6a6', AMBER = '#ffb627', RED = '#ff5a5f', ORANGE = '#f26b21', GREY = 'rgba(255,255,255,0.55)';
-const ZONE_COLOR = { lift: GREEN, neutral: '#9aa7a3', brake: RED };
+const ZONE_COLOR = { raise: GREEN, neutral: '#9aa7a3', brake: RED };
 const STATE_COLOR = { [TRACK.TRACKING]: GREEN, [TRACK.DEGRADED]: AMBER, [TRACK.LOST]: RED, [TRACK.PAUSED]: RED, [TRACK.REACQUIRING]: AMBER };
 
 function skeleton(ctx, h, sx, sy, col) {
@@ -109,7 +109,7 @@ function coach(ctx, e, cx, cy, R) {
   if (k === 'left' || k === 'right') {                // a curved arrow around the top of the ring
     const s = k === 'left' ? -1 : 1, a0 = -Math.PI / 2 + s * 0.15, a1 = -Math.PI / 2 + s * 1.05;
     draw(() => ctx.arc(cx, cy, Ra, Math.min(a0, a1), Math.max(a0, a1)), [cx + Math.cos(a1) * Ra, cy + Math.sin(a1) * Ra, a1 + s * Math.PI / 2]);
-  } else if (start || k === 'lift' || k === 'low') {  // straight up or down, on both sides of the ring
+  } else if (start || k === 'low') {  // straight up or down, on both sides of the ring
     const s = k === 'low' ? 1 : -1, bob = 6 * pulse;
     for (const side of [-1, 1]) {
       const x = cx + side * (R + 34), y0 = cy - s * R * 0.35, y1 = cy + s * (R * 0.55 + bob);
@@ -161,10 +161,10 @@ export function drawTracking(ctx, vision, engines, w, h, opts = {}) {
     ring(ctx, e, sx, sy, col, pip, opts);
     if (level === 'calib' && !e.inGame) banner(ctx, e, e.zone.x0 * sx, e.zone.x1 * sx, 0);
     if (debug && g) {
-      // straight-ahead line through the lock-on middle, and the lift / neutral / brake heights
+      // straight-ahead line through the lock-on middle, and the raise / neutral / brake heights
       const unit = (g.size0.L + g.size0.R) / 2, z = e.zone, x0 = z.x0 * sx + 6, x1 = z.x1 * sx - 6, y0 = (g.mid0.y + e.vZero * unit);
       ctx.setLineDash([4, 6]); ctx.lineWidth = 1.5;
-      for (const [off, c] of [[g.liftOn, GREEN], [g.lowOn, RED], [0, GREY]]) { const yy = (y0 + off * unit) * sy; ctx.strokeStyle = c; ctx.beginPath(); ctx.moveTo(x0, yy); ctx.lineTo(x1, yy); ctx.stroke(); }
+      for (const [off, c] of [[g.raiseOn, GREEN], [g.lowOn, RED], [0, GREY]]) { const yy = (y0 + off * unit) * sy; ctx.strokeStyle = c; ctx.beginPath(); ctx.moveTo(x0, yy); ctx.lineTo(x1, yy); ctx.stroke(); }
       const a = (g.theta0 + e.rotZero) * D2R, m = g.mid0, L = g.gap0 * 0.6;
       ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.moveTo((m.x - Math.cos(a) * L) * sx, (m.y - Math.sin(a) * L) * sy); ctx.lineTo((m.x + Math.cos(a) * L) * sx, (m.y + Math.sin(a) * L) * sy); ctx.stroke();
       ctx.setLineDash([]);
@@ -173,7 +173,7 @@ export function drawTracking(ctx, vision, engines, w, h, opts = {}) {
       if (e.ht.R && hands.length) ctx.fillText('R', e.ht.R.palm.x * sx, e.ht.R.palm.y * sy - 12);
     }
     if (pip) {
-      // the in-race strip: tracking status, steering direction, lift / neutral / brake
+      // the in-race strip: tracking status, steering direction, raise / neutral / brake
       const st = e.track.state, z = e.zone, x0 = z.x0 * sx, zw = (z.x1 - z.x0) * sx, bh = Math.max(13, h * 0.1), y = h - bh;
       ctx.fillStyle = 'rgba(10,20,18,0.72)'; ctx.fillRect(x0, y, zw, bh);
       ctx.fillStyle = STATE_COLOR[st] || RED; ctx.beginPath(); ctx.arc(x0 + bh * 0.5, y + bh * 0.5, bh * 0.26, 0, 7); ctx.fill();

@@ -124,7 +124,7 @@ body.ready #gl { opacity: 1; }
 
 .vh-cam .g { font-size: 11px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: var(--paper-2); color: var(--ink-2); }
 .vh-cam .g.on { background: var(--gold); color: var(--ink); }
-.vh-cam .g-item.on, .cp-zones .z-lift.on { background: #2ee6a6; color: #0b3a2c; }
+.vh-cam .g-item.on, .cp-zones .z-raise.on { background: #2ee6a6; color: #0b3a2c; }
 .vh-cam .g-brake.on, .cp-zones .z-brake.on { background: #ff3b4e; color: #fff; }
 .cp-zones { display: flex; gap: 6px; }
 .cp-zones span { font-size: 11px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: var(--paper-2); color: var(--ink-2); }
@@ -387,9 +387,9 @@ body.touch .hud-pause { display: grid; }
 .hmeter .z-down { height: 17%; }
 .hmeter .z-up { top: 0; background: rgba(46, 230, 166, .55); }
 .hmeter .z-down { bottom: 0; background: rgba(230, 57, 70, .55); }
-[data-zone="lift"] .hmeter .z-up { background: #2ee6a6; }
+[data-zone="raise"] .hmeter .z-up { background: #2ee6a6; }
 [data-zone="brake"] .hmeter .z-down { background: #ff3b4e; }
-[data-zone="lift"] .hmeter b, [data-zone="brake"] .hmeter b { background: #16302b; }
+[data-zone="raise"] .hmeter b, [data-zone="brake"] .hmeter b { background: #16302b; }
 .hmeter b { position: absolute; left: 1px; right: 1px; height: 6px; margin-top: -3px; border-radius: 3px; background: #fff; top: 50%; }
 .vh[data-side="right"] .vh-cam .hmeter { order: 0; }
 @media (max-height: 520px) { .hmeter { height: 40px; width: 9px; } }

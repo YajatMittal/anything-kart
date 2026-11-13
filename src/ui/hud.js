@@ -112,14 +112,14 @@ export class Hud {
           h.cam.dataset.state = v === 'lost' ? 'lost' : v === 'degraded' ? 'degraded' : 'ok';
         });
         // height meter (shown only when lowering brakes): the raise (green) and brake (red) zones
-        const cal = e?.grip, span = Math.max(0.3, Math.abs(cal?.lowOn || 0.9), Math.abs(cal?.liftOn || 0.8)) * 1.6;
-        this.set(h, 'zones', `${cal?.liftOn}|${cal?.lowOn}`, () => {
-          h.zUp.style.height = `${Math.max(4, 50 - (Math.abs(cal?.liftOn || 0.8) / span) * 50)}%`;
+        const cal = e?.grip, span = Math.max(0.3, Math.abs(cal?.lowOn || 0.9), Math.abs(cal?.raiseOn || 0.8)) * 1.6;
+        this.set(h, 'zones', `${cal?.raiseOn}|${cal?.lowOn}`, () => {
+          h.zUp.style.height = `${Math.max(4, 50 - (Math.abs(cal?.raiseOn || 0.8) / span) * 50)}%`;
           h.zDown.style.height = `${Math.max(4, 50 - (Math.abs(cal?.lowOn || 0.9) / span) * 50)}%`;
         });
         h.hdot.style.top = `${Math.max(0, Math.min(100, 50 + ((live ? e.vert : 0) / span) * 50))}%`;
         this.set(h, 'zone', live ? e.zoneNow : 'neutral', (z) => { h.cam.dataset.zone = z; });
-        h.gItem.classList.toggle('on', !!o?.lift);
+        h.gItem.classList.toggle('on', !!o?.item);
         h.gBrake.classList.toggle('on', !!o?.brake);
         const brakeOn = !!e?.tuning?.brake;
         h.gBrake.hidden = !brakeOn; h.zDown.hidden = !brakeOn;

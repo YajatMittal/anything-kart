@@ -2,12 +2,12 @@
 // (any object, or nothing). It turns the hand tracker's measurements into the one output the
 // game reads:
 //
-//   { steering: -1..1, lift, brake, verticalPosition, confidence, trackingState,
+//   { steering: -1..1, item, brake, verticalPosition, confidence, trackingState,
 //     activeSignals: { leftHand, rightHand } }
 //
 //   steering:  the turn of the line between the two palms, compared with the straight-ahead set
 //              in the lock-on
-//   lift:      true for a moment after a flick (use your item)
+//   item:      true for a moment after a flick (use your item)
 //   brake:     the point between the palms is held low (only if lowering to brake is on).
 //              Height is measured in units of the hands' spacing, so it works the same near or
 //              far from the camera, and turning doesn't move that point.
@@ -41,7 +41,7 @@ export class SteeringEngine {
   // Start the lock-on again from nothing (Redo lock-on).
   resetGrip() {
     this.phase = PHASE.FIND;
-    this.grip = null;                // set by the lock-on: { theta0, mid0, gap0, size0: {L, R}, ratio0, maxAngle, liftOn, lowOn }
+    this.grip = null;                // set by the lock-on: { theta0, mid0, gap0, size0: {L, R}, ratio0, maxAngle, raiseOn, lowOn }
     this.samples = []; this.findT = 0; this.msg = '';
     this.tests = { hold: false, left: false, right: false, low: false };
     this.tt = { left: 0, right: 0, low: 0 };
@@ -55,7 +55,7 @@ export class SteeringEngine {
     this.est = null; this.last = null; this.lastGood = null;
     this.rotZero = 0; this.vZero = 0; this.hZero = 0;
     this.rel = 0; this.angle = 0; this.vRaw = 0; this.vert = 0; this.hRaw = 0; this.vVel = 0; this.vPrev = null;
-    this.steering = 0; this.zone_ = 'neutral'; this.liftT = 0; this.brakeT = 0; this.armed = false; this.armT = 0; this.liftQueued = false;
+    this.steering = 0; this.zone_ = 'neutral'; this.raiseT = 0; this.brakeT = 0; this.armed = false; this.armT = 0; this.itemQueued = false;
     this.conf = 0; this.easeT = 0; this.measure = 'none';
     this.snaps = null; this.flickT = -9; this.flickCool = 0; this.lastSnap = null;   // the flick detector
     this.gk = null; this.oneHand = false; this.bridge = null;   // how each hand sits on the held thing (for one-hand frames)
@@ -199,7 +199,7 @@ export class SteeringEngine {
       theta0: circMean(S.map((s) => s.theta)),
       mid0: { x: mean(S.map((s) => s.mid.x)), y: mean(S.map((s) => s.mid.y)) },
       gap0, size0, ratio0: gap0 / ((size0.L + size0.R) / 2),
-      maxAngle: this.tuning.maxAngle, liftOn: CFG.liftOn, lowOn: CFG.lowOn,
+      maxAngle: this.tuning.maxAngle, raiseOn: CFG.raiseOn, lowOn: CFG.lowOn,
     };
     this.samples = []; this.tests.hold = true; this.phase = PHASE.TEST; this.justLocked = true;
     this.resetMotion();
@@ -228,7 +228,7 @@ export class SteeringEngine {
   idle(dt) {
     this.steering = slew(this.steering, 0, CFG.slewLost * dt);
     const o = this.output;
-    o.steering = this.steering; o.lift = false; o.brake = false; o.verticalPosition = 0; o.confidence = 0; o.trackingState = TRACK.LOST;
+    o.steering = this.steering; o.item = false; o.brake = false; o.verticalPosition = 0; o.confidence = 0; o.trackingState = TRACK.LOST;
     o.activeSignals.leftHand = !!this.ht.L; o.activeSignals.rightHand = !!this.ht.R;
     this.pushHistory();
   }
@@ -274,23 +274,23 @@ export class SteeringEngine {
     this.steering = slew(this.steering, target, rate * dt);
     if (Math.abs(this.steering) < 1e-3) this.steering = 0;
 
-    // lift / neutral / brake zones. Off at once without both hands; after a loss, the hands
+    // raise / neutral / brake zones. Off at once without both hands; after a loss, the hands
     // must be seen at the neutral height before either can fire again.
     if (st === TRACK.TRACKING && this.oneHand) {
       // one hand: item and brake stay as they were
     } else if (st === TRACK.TRACKING) {
-      const v = this.vert, lo = g.liftOn * CFG.zoneExit, hi = g.lowOn * CFG.zoneExit;
+      const v = this.vert, lo = g.raiseOn * CFG.zoneExit, hi = g.lowOn * CFG.zoneExit;
       this.vVel = this.vPrev === null ? 0 : this.vVel * 0.5 + ((v - this.vPrev) / dt) * 0.5; this.vPrev = v;
       if (!this.armed) { this.armT = v > lo && v < hi ? this.armT + dt : 0; if (this.armT >= 0.1) this.armed = true; }
-      this.liftT = v < g.liftOn ? this.liftT + dt : 0; this.brakeT = v > g.lowOn ? this.brakeT + dt : 0;
+      this.raiseT = v < g.raiseOn ? this.raiseT + dt : 0; this.brakeT = v > g.lowOn ? this.brakeT + dt : 0;
       const z = this.zone_;
       if (z === 'neutral' && this.armed) {
-        if (this.liftT >= CFG.liftDelay || (v < g.liftOn * 0.6 && this.vVel < -4)) this.zone_ = 'lift';   // raised (only used for "raise it to start")
+        if (this.raiseT >= CFG.raiseDelay || (v < g.raiseOn * 0.6 && this.vVel < -4)) this.zone_ = 'raise';   // raised (only used for "raise it to start")
         else if (this.brakeT >= CFG.brakeDelay && this.tuning.brake) this.zone_ = 'brake';
-      } else if (z === 'lift' && v > lo) this.zone_ = 'neutral';
+      } else if (z === 'raise' && v > lo) this.zone_ = 'neutral';
       else if (z === 'brake' && v < hi) this.zone_ = 'neutral';
-    } else if (st !== TRACK.DEGRADED || this.measure === 'none') {   // a brief one-hand or bad-frame blip keeps lift/brake
-      this.zone_ = 'neutral'; this.liftT = 0; this.brakeT = 0; this.armed = false; this.armT = 0; this.liftQueued = false; this.vPrev = null;
+    } else if (st !== TRACK.DEGRADED || this.measure === 'none') {   // a brief one-hand or bad-frame blip keeps the zone
+      this.zone_ = 'neutral'; this.raiseT = 0; this.brakeT = 0; this.armed = false; this.armT = 0; this.itemQueued = false; this.vPrev = null;
     }
     // the flick carries on through short dropouts (fast flicks blur, and objects hide hands);
     // it only starts over once control is really lost
@@ -298,7 +298,7 @@ export class SteeringEngine {
     else { this.snaps = null; this.flickReadyT = 0; }
 
     const o = this.output;
-    o.steering = this.steering; o.lift = this.now - this.flickT < 0.3; o.brake = this.zone_ === 'brake';
+    o.steering = this.steering; o.item = this.now - this.flickT < 0.3; o.brake = this.zone_ === 'brake';
     o.verticalPosition = live ? -this.vert : 0; o.confidence = Math.round(this.conf * 100) / 100; o.trackingState = st;
     o.activeSignals.leftHand = !!this.ht.L; o.activeSignals.rightHand = !!this.ht.R;
     this.pushHistory();
@@ -345,7 +345,7 @@ export class SteeringEngine {
     }
     const kind = Object.keys(hits).find((k) => hits[k] > 0);
     if (kind) {
-      this.liftQueued = true; this.flickT = this.now; this.flickCool = CFG.flickCool;
+      this.itemQueued = true; this.flickT = this.now; this.flickCool = CFG.flickCool;
       this.lastSnap = { kind, size: hits[kind], t: this.now };
       for (const k in S) S[k].cancel();                                // one flick, one item
     }
@@ -362,11 +362,11 @@ export class SteeringEngine {
     this.filter.reset(0); this.angle = 0; this.rel = 0; this.vert = 0; this.vRaw = 0; this.hRaw = 0;
     return true;
   }
-  start() { if (this.grip) { this.inGame = true; this.liftQueued = false; } }
+  start() { if (this.grip) { this.inGame = true; this.itemQueued = false; } }
   stop() { this.inGame = false; this.track.wasPaused = false; if (this.track.state === TRACK.PAUSED) this.track.state = TRACK.LOST; }
   // The race resumes after a pause (the game shows a countdown first): control eases back in.
-  resume() { this.track.resume(); this.easeT = CFG.easeIn; this.armed = false; this.armT = 0; this.zone_ = 'neutral'; this.liftQueued = false; if (this.est) this.filter.reset(this.rel); }
-  consumeLift() { const q = this.liftQueued; this.liftQueued = false; return q; }
+  resume() { this.track.resume(); this.easeT = CFG.easeIn; this.armed = false; this.armT = 0; this.zone_ = 'neutral'; this.itemQueued = false; if (this.est) this.filter.reset(this.rel); }
+  consumeItem() { const q = this.itemQueued; this.itemQueued = false; return q; }
   get zoneNow() { return this.zone_; }
 
   // For the overlays: where the ring goes and how it is turned.
@@ -390,7 +390,7 @@ export class SteeringEngine {
       leftConf: ht.L ? ht.L.conf : null, rightConf: ht.R ? ht.R.conf : null,
       L: ht.L, R: ht.R, rawAngle: e && this.track.live ? e.rot : null, rel: this.rel, angle: this.angle, theta0: g ? g.theta0 : null,
       steering: this.steering, vRaw: this.vRaw, vert: this.vert, zone: this.zone_, armed: this.armed,
-      signals: this.output.activeSignals, confidence: this.conf, liftOn: g?.liftOn, lowOn: g?.lowOn, maxAngle: this.maxAngle,
+      signals: this.output.activeSignals, confidence: this.conf, raiseOn: g?.raiseOn, lowOn: g?.lowOn, maxAngle: this.maxAngle,
       handsAge: this.now - this.handsT,
       flick: this.lastSnap ? `${this.lastSnap.kind} ×${this.lastSnap.size.toFixed(1)}, ${(this.now - this.lastSnap.t).toFixed(1)} s ago` : 'none yet',
     };

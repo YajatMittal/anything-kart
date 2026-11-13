@@ -207,7 +207,7 @@ export class Race {
         if (k.rouletteT <= 0) { k.item = k.pendingItem; k.itemCount = ITEMS[k.item].count || 1; if (k.human) this.sound.play('item'); }
       }
       if (k.input.item && this.canDrive && k.spinT <= 0) {
-        if (!k.item && k.human && k.rouletteT <= 0) this.hud?.flash(k, 'NO ITEM YET', 'blue');   // so a lift always shows it worked
+        if (!k.item && k.human && k.rouletteT <= 0) this.hud?.flash(k, 'NO ITEM YET', 'blue');   // so a flick always shows it worked
         this.useItem(k);
       }
       k.update(dt);
