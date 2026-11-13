@@ -9,7 +9,7 @@ const SONGS = {
   // the menus: slower, softer, no drums
   menu: { bpm: 104, wave: 'sine', chords: [[60, 64, 67], [57, 60, 64], [65, 69, 72], [67, 71, 74]], calm: true },
 };
-const MUSIC_LEVEL = { race: 0.32, menu: 0.2, quiet: 0.1 };
+const MUSIC_LEVEL = { race: 0.42, menu: 0.26, quiet: 0.13 };
 const LEAD = [2, -1, -1, 1, -1, 0, 1, -1, 3, -1, 2, -1, 1, 0, -1, -1];
 const LEAD_B = [0, 1, 2, -1, 3, -1, 2, 1, -1, 0, -1, 1, 2, -1, -1, 3];
 
@@ -27,7 +27,7 @@ export class Sound {
     const ctx = this.ctx = new AC();
     this.master = ctx.createGain(); this.master.gain.value = this.muted ? 0 : 0.8; this.master.connect(ctx.destination);
     this.sfxBus = ctx.createGain(); this.sfxBus.gain.value = 0.9; this.sfxBus.connect(this.master);
-    this.musicBus = ctx.createGain(); this.musicBus.gain.value = 0.32; this.musicBus.connect(this.master);
+    this.musicBus = ctx.createGain(); this.musicBus.gain.value = MUSIC_LEVEL.race; this.musicBus.connect(this.master);
     const len = ctx.sampleRate;
     this.noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
     const d = this.noiseBuf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
@@ -136,7 +136,7 @@ export class Sound {
   musicLevel(level) {
     if (!this.musicBus) return;
     const g = this.musicBus.gain, t = this.ctx.currentTime;
-    g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(MUSIC_LEVEL[level] ?? 0.32, t + 0.4);
+    g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(MUSIC_LEVEL[level] ?? MUSIC_LEVEL.race, t + 0.4);
   }
 
   schedule() {
