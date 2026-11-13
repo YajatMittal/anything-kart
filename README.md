@@ -2,7 +2,9 @@
 
 A kart racer where **whatever you're holding becomes your steering wheel**. Pick up a plate, a book or a TV remote, hold it up to your webcam, and turn it like a wheel to race original helmeted drivers across a sunny coast, a snowy pass and a twisty canyon. No object handy? Just hold your hands up as if gripping a wheel.
 
-Everything runs in the browser on the player's own device. Camera video is never uploaded, and there are no accounts or API keys.
+**Play it: [anything-kart.vercel.app](https://anything-kart.vercel.app)** (a laptop or desktop with a webcam works best; phones work too)
+
+Everything runs in the browser on the player's own device. Camera video is never uploaded, and there are no accounts or sign-ups.
 
 ## Getting started
 
@@ -22,6 +24,10 @@ npm run dev      # play locally at http://localhost:8000 (reloads as you edit)
 
 Browsers only allow the camera on `http://localhost` or `https://` pages, so phones need the game on a real `https://` site.
 
+### Deploying
+
+The live site is hosted on [Vercel](https://vercel.com), connected to this repository: every push to `main` builds the game (`npm run build`) and updates the site within about a minute. Caching rules are in `vercel.json`.
+
 ## How to play
 
 In **Race setup**, choose your racer, mode, track and bot skill. Camera players then press **Next: lock on** and allow the camera.
@@ -36,6 +42,12 @@ In **Race setup**, choose your racer, mode, track and bot skill. Camera players 
 In the race, **turn to steer** and **flick it** to use your item: a quick snap of your wrists, a quick pop up, or a quick jab toward the screen. The kart accelerates by itself.
 
 Your lock-on lasts the whole race. If a hand is hidden for a moment, steering carries on from the other hand; if both hands leave, the race pauses and carries on when they're back.
+
+The first time, hand tracking takes a few seconds to download (about 22 MB). It starts loading as soon as you open Race setup, and the browser keeps it for next time.
+
+### On a phone
+
+Prop the phone up sideways, about an arm's length away. iPhones don't let websites go full screen, so for full screen tap **Share → Add to Home Screen** and open Anything Kart from there (Android: **Install app** in the browser menu). The graphics adjust themselves: if a device can't keep up, the race is drawn with fewer pixels until it runs smoothly again.
 
 ### Controls
 
@@ -74,6 +86,7 @@ src/
   app.js                shared by every screen: renderer, camera, input, sound, settings, state
   flow.js               moving between screens, starting and pausing races, lost-tracking pause
   debug.js              diagnostics overlay (D key)
+  resolution.js         lowers and restores the resolution to keep the frame rate smooth
   screens/              race setup (lobby), lock-on, results
   race/                 race rules and modes, karts and physics, tracks, scenery, racers
   steering/             turns hand tracking into steering, flicks and tracking state
@@ -83,9 +96,13 @@ src/
   ui/                   in-race HUD and icons
   styles/               all styling
 assets/fonts/           fonts
-public/mediapipe/       MediaPipe hand tracking (library, WebAssembly and model), served as-is
+public/
+  mediapipe/            MediaPipe hand tracking (library, WebAssembly and model), served as-is
+  icon-*.png            app icons (home screen, browser tab)
+  manifest.webmanifest  lets phones add the game to the home screen and open it full screen
 tests/                  simulated-camera tests (development only, not part of the build)
 vite.config.js          build settings
+vercel.json             hosting settings (how long browsers keep files)
 ```
 
 ### How the steering works (`src/steering/`)
@@ -128,7 +145,9 @@ Reload the page between runs.
 
 ## Privacy
 
-The camera picture is processed on the device and never leaves it. Settings are stored in the browser's local storage.
+- The camera picture is processed on the device and never leaves it.
+- Settings and Time Trial records are stored in the browser's local storage, on that device only.
+- The live site counts anonymous visits with [Vercel Web Analytics](https://vercel.com/docs/analytics) (no cookies, nothing personal, nothing from the camera). Local development isn't counted.
 
 ## Credits
 

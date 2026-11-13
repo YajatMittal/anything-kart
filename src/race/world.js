@@ -261,28 +261,62 @@ export class World {
   }
 
   build_coast() {
-    const palms = this.scatter(70, 3, 120);
+    const b = this.track.bounds, rand = this.rand;
+    const shoreR = Math.max(b.maxX - b.minX, b.maxZ - b.minZ) * 0.5 + 270;   // the edge of the sand (see buildGround)
+
+    // palms: a wide spread, plus groves close to the road
+    const palms = [...this.scatter(110, 3, 130), ...this.scatter(40, 3, 22)];
     this.scene.add(instanced((() => { const g = new THREE.CylinderGeometry(0.7, 1.1, 15, 6); g.translate(0, 7.5, 0); return g; })(), low(0x9b6b3f), palms));
     const leaf = new THREE.ConeGeometry(1.6, 9, 4); leaf.scale(1, 1, 0.3); leaf.rotateZ(-1.8); leaf.translate(4.2, 14.4, 0);
     const lm = low(0x2fa84f, { side: THREE.DoubleSide });
     for (let k = 0; k < 6; k++) this.scene.add(instanced(leaf, lm, palms.map((p) => ({ ...p, r: p.r + (k * Math.PI) / 3 }))));
     this.scene.add(instanced(new THREE.SphereGeometry(0.8, 8, 6), low(0x6b4226), palms.map((p) => ({ ...p, y: 14 * p.s, s: p.s }))));
+
+    // dune grass tufts and rocks
+    const tufts = this.scatter(160, 1.5, 150);
+    this.scene.add(instanced((() => { const g = new THREE.ConeGeometry(1.1, 2.6, 5); g.translate(0, 1.3, 0); return g; })(), low(0x7fb850), tufts, false));
+    this.scene.add(instanced((() => { const g = new THREE.ConeGeometry(0.8, 2, 5); g.translate(1, 1, 0.6); return g; })(), low(0x9bc95f), tufts, false));
     const rocks = this.scatter(30, 4, 170);
     this.scene.add(instanced(new THREE.DodecahedronGeometry(4, 0), low(0x9a958c), rocks.map((k) => ({ ...k, y: 1.5, sv: [k.s * 1.5, k.s, k.s * 1.2] }))));
-    for (const spot of this.scatter(9, 7, 90)) {
-      const g = new THREE.Group(), cols = [0xe63946, 0xffb627, 0x2ec4b6];
+
+    // beach umbrellas, each with a towel
+    const bright = [0xe63946, 0xffb627, 0x2ec4b6, 0x1d8fe0, 0xff7eb6];
+    for (const spot of this.scatter(20, 7, 70)) {
+      const g = new THREE.Group(), c = bright[Math.floor(rand() * bright.length)];
       mesh(g, new THREE.CylinderGeometry(0.16, 0.16, 7, 6), low(0xffffff), 0, 3.5, 0);
-      mesh(g, new THREE.ConeGeometry(5, 2.4, 8), low(cols[Math.floor(this.rand() * 3)]), 0, 7.4, 0);
-      mesh(g, new THREE.BoxGeometry(2, 0.3, 5), low(0xffffff), 3.4, 0.5, 1);
+      mesh(g, new THREE.ConeGeometry(5, 2.4, 8), low(c), 0, 7.4, 0);
+      mesh(g, new THREE.BoxGeometry(2.4, 0.15, 5), low(bright[Math.floor(rand() * bright.length)]), 3.4, 0.1, 1);
       this.add(g, spot);
     }
-    for (const spot of this.scatter(5, 11, 120)) {
+    // surfboards stuck in the sand
+    const boards = this.scatter(16, 2, 60);
+    const boardGeo = new THREE.CapsuleGeometry(0.9, 6, 4, 8); boardGeo.scale(1, 1, 0.22); boardGeo.translate(0, 3.6, 0);
+    bright.forEach((c, k) => { const mine = boards.filter((_, j) => j % bright.length === k); if (mine.length) this.scene.add(instanced(boardGeo, low(c), mine.map((q) => ({ ...q, rz: (rand() - 0.5) * 0.3 })))); });
+    // sandcastles
+    for (const spot of this.scatter(7, 4, 50)) {
+      const g = new THREE.Group(), sand = low(0xe6c27f);
+      mesh(g, new THREE.CylinderGeometry(2.6, 3, 2.4, 8), sand, 0, 1.2, 0);
+      for (const [x, z] of [[-2.2, -2.2], [2.2, -2.2], [-2.2, 2.2], [2.2, 2.2]]) { mesh(g, new THREE.CylinderGeometry(0.9, 1, 3.4, 7), sand, x, 1.7, z); mesh(g, new THREE.ConeGeometry(1, 1.2, 7), sand, x, 4, z); }
+      mesh(g, new THREE.CylinderGeometry(0.05, 0.05, 2.2, 4), low(0x8b5c31), 0, 3.5, 0);
+      mesh(g, new THREE.BoxGeometry(1, 0.6, 0.05), low(0xe63946), 0.5, 4.3, 0);
+      this.add(g, spot, spot.s * 0.9);
+    }
+    // beach balls that bob in the breeze
+    const balls = this.scatter(14, 1.5, 60), ballGeo = new THREE.SphereGeometry(1.1, 12, 8);
+    const ballMat = new THREE.MeshLambertMaterial({ map: canvasTex(64, 32, (c, w, h) => { ['#e63946', '#fff', '#1d8fe0', '#fff', '#ffb627', '#fff'].forEach((col, k) => { c.fillStyle = col; c.fillRect(k * w / 6, 0, w / 6 + 1, h); }); }) });
+    for (const [k, spot] of balls.entries()) {
+      const m = new THREE.Mesh(ballGeo, ballMat); m.castShadow = true; m.position.set(spot.x, 1.1, spot.z); this.scene.add(m);
+      this.animated.push((t) => { m.position.y = 1.1 + Math.abs(Math.sin(t * 1.6 + k)) * 0.5; m.rotation.y = t * 0.5 + k; });
+    }
+    // beach huts
+    for (const spot of this.scatter(7, 11, 120)) {
       const g = new THREE.Group();
-      mesh(g, new THREE.BoxGeometry(13, 7, 11), low(0xf3e0bd), 0, 3.5, 0);
+      mesh(g, new THREE.BoxGeometry(13, 7, 11), low([0xf3e0bd, 0xffd6e0, 0xd7f2ee][Math.floor(rand() * 3)]), 0, 3.5, 0);
       const roof = mesh(g, new THREE.ConeGeometry(11, 6, 4), low(0x2ec4b6), 0, 10, 0); roof.rotation.y = Math.PI / 4;
       mesh(g, new THREE.BoxGeometry(3, 4.6, 0.3), low(0x8b5c31), 0, 2.3, 5.6);
       this.add(g, spot, 1);
     }
+    // the lighthouse
     const [lh] = this.scatter(1, 14, 80);
     if (lh) {
       const g = new THREE.Group();
@@ -291,14 +325,64 @@ export class World {
       mesh(g, new THREE.ConeGeometry(4.2, 5, 10), low(0xe63946), 0, 67, 0);
       this.add(g, lh, 1);
     }
-    const b = this.track.bounds, R = Math.max(b.maxX - b.minX, b.maxZ - b.minZ) * 0.5 + 400;
-    for (let k = 0; k < 7; k++) {
-      const a = this.rand() * Math.PI * 2, g = new THREE.Group();
+    // the boardwalk Ferris wheel, slowly turning
+    const [fw] = this.scatter(1, 26, 50);
+    if (fw) {
+      const g = new THREE.Group(), steel = low(0xffffff), R = 20, H = 25;
+      for (const z of [-3, 3]) for (const s of [-1, 1]) { const leg = mesh(g, new THREE.CylinderGeometry(0.7, 0.9, H + 2, 6), steel, s * 7, H / 2, z); leg.rotation.z = s * 0.28; }
+      mesh(g, new THREE.BoxGeometry(18, 1, 9), low(0x8b5c31), 0, 0.5, 0);
+      const wheel = new THREE.Group(); wheel.position.y = H; g.add(wheel);
+      for (const z of [-2.2, 2.2]) { const rim = mesh(wheel, new THREE.TorusGeometry(R, 0.45, 6, 40), low(0xe63946), 0, 0, z); rim.castShadow = true; }
+      mesh(wheel, new THREE.CylinderGeometry(1.4, 1.4, 6, 10), steel, 0, 0, 0).rotation.x = Math.PI / 2;
+      const cabins = [];
+      for (let k = 0; k < 12; k++) {
+        const a = (k / 12) * Math.PI * 2;
+        const spoke = mesh(wheel, new THREE.BoxGeometry(0.35, R, 0.35), steel, Math.cos(a) * R / 2, Math.sin(a) * R / 2, 0); spoke.rotation.z = a - Math.PI / 2;
+        const cab = new THREE.Group(); cab.position.set(Math.cos(a) * R, Math.sin(a) * R, 0); wheel.add(cab);
+        mesh(cab, new THREE.BoxGeometry(2.6, 2.4, 3), low(bright[k % bright.length]), 0, -1.6, 0);
+        mesh(cab, new THREE.ConeGeometry(2.1, 1.2, 4), low(0xffffff), 0, 0, 0).rotation.y = Math.PI / 4;
+        cabins.push(cab);
+      }
+      this.add(g, { ...fw, r: Math.atan2(b.cx - fw.x, b.cz - fw.z) }, 1);   // faces the middle of the track
+      this.animated.push((t) => { wheel.rotation.z = t * 0.12; for (const c of cabins) c.rotation.z = -wheel.rotation.z; });
+    }
+
+    // the shoreline: foam where the sand meets the sea
+    const foam = new THREE.Mesh(new THREE.RingGeometry(shoreR - 3, shoreR + 9, 96), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, depthWrite: false }));
+    foam.rotation.x = -Math.PI / 2; foam.position.set(b.cx, -0.4, b.cz); this.scene.add(foam);
+    this.animated.push((t) => { foam.material.opacity = 0.4 + Math.sin(t * 1.3) * 0.15; foam.scale.setScalar(1 + Math.sin(t * 1.3) * 0.004); });
+    // green islands on the horizon
+    const isles = [], sands = [];
+    for (let k = 0; k < 16; k++) {
+      const a = (k / 16) * Math.PI * 2 + rand() * 0.25, d = shoreR + 380 + rand() * 420, s = 0.6 + rand() * 1.2;
+      const spot = { x: b.cx + Math.cos(a) * d, z: b.cz + Math.sin(a) * d, r: rand() * 6 };
+      isles.push({ ...spot, y: -2, sv: [s * 1.6, s * (0.6 + rand() * 0.7), s * 1.3] }); sands.push({ ...spot, y: -0.6, sv: [s * 1.7, 1, s * 1.4] });
+    }
+    this.scene.add(instanced(new THREE.SphereGeometry(60, 9, 6, 0, Math.PI * 2, 0, Math.PI / 2), low(0x4fa45a), isles, false));
+    this.scene.add(instanced(new THREE.CylinderGeometry(62, 64, 1.2, 12), low(0xefd9a7), sands, false));
+    // sailing boats
+    const R = shoreR + 130;
+    for (let k = 0; k < 9; k++) {
+      const a = rand() * Math.PI * 2, g = new THREE.Group();
       mesh(g, new THREE.BoxGeometry(5, 3, 18), low(0xffffff), 0, 1, 0);
       const sail = mesh(g, new THREE.ConeGeometry(7, 22, 3), low(k % 2 ? 0xffb627 : 0xffffff), 0, 13, 0); sail.scale.z = 0.12;
-      g.position.set(b.cx + Math.cos(a) * R, -0.9, b.cz + Math.sin(a) * R); g.rotation.y = a * 3;
+      const d = R + rand() * 220;
+      g.position.set(b.cx + Math.cos(a) * d, -0.9, b.cz + Math.sin(a) * d); g.rotation.y = a * 3;
       this.scene.add(g);
       this.animated.push((t) => { g.position.y = -0.9 + Math.sin(t + k) * 0.5; g.rotation.z = Math.sin(t * 0.8 + k) * 0.05; });
+    }
+    // seagulls circling over the beach
+    const gullWing = new THREE.BoxGeometry(2.6, 0.12, 0.8); gullWing.translate(1.3, 0, 0);
+    const white = low(0xffffff);
+    for (let k = 0; k < 10; k++) {
+      const g = new THREE.Group(), lw = new THREE.Mesh(gullWing, white), rw = new THREE.Mesh(gullWing, white);
+      rw.scale.x = -1; g.add(lw, rw); mesh(g, new THREE.BoxGeometry(0.5, 0.45, 1.6), white, 0, 0, 0);
+      const cx = b.cx + (rand() - 0.5) * (b.maxX - b.minX), cz = b.cz + (rand() - 0.5) * (b.maxZ - b.minZ), rr = 30 + rand() * 60, y = 34 + rand() * 25, sp = (0.15 + rand() * 0.15) * (rand() < 0.5 ? -1 : 1), ph = rand() * 6;
+      this.scene.add(g);
+      this.animated.push((t) => {
+        const a = t * sp + ph; g.position.set(cx + Math.cos(a) * rr, y + Math.sin(t * 0.7 + k) * 2, cz + Math.sin(a) * rr);
+        g.rotation.y = -a + (sp > 0 ? Math.PI : 0); const f = Math.sin(t * 6 + k) * 0.45; lw.rotation.z = f; rw.rotation.z = -f;
+      });
     }
   }
 
