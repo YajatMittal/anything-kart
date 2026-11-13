@@ -61,12 +61,6 @@ function ring(ctx, e, sx, sy, col, small, opts) {
   const coaching = opts.level === 'calib' && e.calibrated && !e.inGame;
   if (coaching && live) coach(ctx, e, cx, cy, R);
   if (coaching && live && e.startProgress > 0 && !small) label(ctx, 'START', cx, cy + 9, 30);   // holding it up to start
-  const since = performance.now() / 1000 - (e.flickShowT ?? -9);
-  if (since < 0.7 && !small) {                                         // a flick just counted (the lock-on screen shows it)
-    ctx.globalAlpha = 1 - since / 0.7;
-    ctx.lineWidth = 8; ctx.strokeStyle = GREEN; ctx.beginPath(); ctx.arc(cx, cy, R + 14 + since * 40, 0, 7); ctx.stroke();
-    ctx.globalAlpha = 1; label(ctx, 'FLICK!', cx, cy + 9, 30);
-  }
   // (the lock-on banner says what to do; the ring itself just shows the angle)
   const text = !r.live ? 'Show both hands' : live && !(coaching && e.doneT > 0) ? `${Math.round(e.angle * (opts.tuning?.invert ? -1 : 1))}°` : '';
   if (text) label(ctx, text, cx, cy - R - 18, live ? 24 : 20);
