@@ -21,10 +21,18 @@ export class Sound {
     this.song = null; this.step = 0; this.nextTime = 0; this.timer = null;
   }
 
+  // Called on every tap/click/key: browsers only allow sound after the player does something.
   init() {
-    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+    // iPhones also stop it when you switch apps or lock the screen ('interrupted'), so any state
+    // that isn't running is resumed on the next tap.
+    if (this.ctx) { if (this.ctx.state !== 'running') this.ctx.resume().catch(() => {}); return; }
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    // iPhones mute web sounds when the side switch is on silent; a game should play like a video.
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* older iOS */ }
     const ctx = this.ctx = new AC();
+    // Older iPhones only start sound once something has actually played inside a tap.
+    try { const b = ctx.createBufferSource(); b.buffer = ctx.createBuffer(1, 1, 22050); b.connect(ctx.destination); b.start(0); } catch { /* fine */ }
+    ctx.resume?.().catch(() => {});
     this.master = ctx.createGain(); this.master.gain.value = this.muted ? 0 : 0.8; this.master.connect(ctx.destination);
     this.sfxBus = ctx.createGain(); this.sfxBus.gain.value = 0.9; this.sfxBus.connect(this.master);
     this.musicBus = ctx.createGain(); this.musicBus.gain.value = MUSIC_LEVEL.race; this.musicBus.connect(this.master);

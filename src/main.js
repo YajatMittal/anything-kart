@@ -77,10 +77,9 @@ $('#btn-mute').innerHTML = sound.muted ? ICON.muted : ICON.sound;
 $('#btn-mute').onclick = () => toggleMute();
 
 // Browsers only allow sound after the player does something, so start it on the first input.
-for (const ev of ['pointerdown', 'touchend', 'click']) window.addEventListener(ev, () => sound.init());
+// Lifting the finger (touchend / click), not touching down: iPhones only allow sound then.
 const firstSound = () => { sound.init(); if (app.state !== 'race' && app.state !== 'paused') sound.menuMusic(); };
-window.addEventListener('keydown', firstSound);
-window.addEventListener('pointerdown', firstSound);
+for (const ev of ['touchend', 'click', 'keydown']) window.addEventListener(ev, firstSound);
 
 // ------------------------------------------------------------------ keys and gamepads
 // Menu / shortcut keys are handled as they're pressed; driving keys are polled by the controllers.
