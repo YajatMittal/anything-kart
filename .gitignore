@@ -1,0 +1,48 @@
+# ---------------------------------------------------------------- secrets
+# Supabase keys and other settings go in a local .env file, never in git.
+# (.env.example is allowed, so the repo can show which settings are needed.)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---------------------------------------------------------------- dependencies and build output
+node_modules/
+dist/
+build/
+.vite/
+.cache/
+coverage/
+
+# ---------------------------------------------------------------- logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------------------------------------------------------------- operating systems
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# ---------------------------------------------------------------- editors and local tools
+.vscode/
+.idea/
+*.swp
+*~
+.claude/
+
+# ---------------------------------------------------------------- python (the dev server)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ---------------------------------------------------------------- deployment tools' local state
+.vercel/
+.netlify/
+supabase/.temp/
+supabase/.branches/

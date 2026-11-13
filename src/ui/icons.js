@@ -1,0 +1,24 @@
+// Original item and interface icons, drawn as inline SVG.
+
+const svg = (body, vb = '0 0 64 64') => `<svg viewBox="${vb}" aria-hidden="true">${body}</svg>`;
+
+export const ICON = {
+  chili: svg('<path d="M46 12c-3 5-8 6-11 6-16 2-27 16-27 36 13 0 32-8 37-27 1-4 0-8-3-11 2-1 5-1 7-2z" fill="#e63946"/><path d="M46 12c1-3 4-6 8-6M35 18c3 1 6 3 7 9" stroke="#2a9d4a" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M18 42c4-8 9-13 16-16" stroke="#ffb3ba" stroke-width="3" fill="none" stroke-linecap="round"/>'),
+  chili3: svg('<g transform="translate(-5 12) scale(.62)"><path d="M46 12c-3 5-8 6-11 6-16 2-27 16-27 36 13 0 32-8 37-27 1-4 0-8-3-11 2-1 5-1 7-2z" fill="#e63946"/></g><g transform="translate(13 -4) scale(.62)"><path d="M46 12c-3 5-8 6-11 6-16 2-27 16-27 36 13 0 32-8 37-27 1-4 0-8-3-11 2-1 5-1 7-2z" fill="#ff7b2e"/></g><g transform="translate(29 16) scale(.62)"><path d="M46 12c-3 5-8 6-11 6-16 2-27 16-27 36 13 0 32-8 37-27 1-4 0-8-3-11 2-1 5-1 7-2z" fill="#e63946"/></g>'),
+  mud: svg('<path d="M10 42c-5-9 2-20 13-18 4-9 18-9 22-1 9 1 13 12 8 19-3 7-14 9-20 6-8 4-20 2-23-6z" fill="#7a4e2d"/><circle cx="24" cy="33" r="4" fill="#a87447"/><circle cx="40" cy="28" r="3" fill="#a87447"/><circle cx="38" cy="42" r="5" fill="#5c3820"/>'),
+  snowball: svg('<circle cx="32" cy="32" r="24" fill="#f4fbff" stroke="#8fc7e8" stroke-width="4"/><path d="M18 26c3-6 8-9 14-10" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="40" cy="38" r="3" fill="#bfe3f5"/><circle cx="26" cy="42" r="2" fill="#bfe3f5"/>'),
+  bee: svg('<ellipse cx="20" cy="18" rx="9" ry="13" fill="#d8f1ff" transform="rotate(-25 20 18)"/><ellipse cx="38" cy="16" rx="9" ry="13" fill="#d8f1ff" transform="rotate(20 38 16)"/><ellipse cx="32" cy="38" rx="23" ry="16" fill="#ffc914"/><path d="M26 23v30M38 23v30" stroke="#1c1c22" stroke-width="6"/><circle cx="48" cy="34" r="3" fill="#1c1c22"/>'),
+  bubble: svg('<circle cx="32" cy="32" r="25" fill="#9be3ff" fill-opacity=".55" stroke="#3fb8ec" stroke-width="4"/><path d="M18 26c2-6 7-10 13-11" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="43" cy="44" r="3" fill="#fff"/>'),
+  acorns: svg('<path d="M18 30h28c1 15-6 25-14 28-8-3-15-13-14-28z" fill="#c98a3c"/><path d="M14 30c0-10 8-16 18-16s18 6 18 16z" fill="#6b4226"/><path d="M32 14V6" stroke="#6b4226" stroke-width="5" stroke-linecap="round"/>'),
+  acorn: svg('<path d="M18 30h28c1 15-6 25-14 28-8-3-15-13-14-28z" fill="#ffc266"/><path d="M14 30c0-10 8-16 18-16s18 6 18 16z" fill="#8a5a33"/><path d="M32 14V6" stroke="#8a5a33" stroke-width="5" stroke-linecap="round"/>'),
+  camera: svg('<rect x="6" y="18" width="52" height="34" rx="8" fill="currentColor"/><path d="M22 18l4-7h12l4 7z" fill="currentColor"/><circle cx="32" cy="35" r="11" fill="none" stroke="#fff" stroke-width="4"/>'),
+  keyboard: svg('<rect x="4" y="16" width="56" height="32" rx="6" fill="currentColor"/><g fill="#fff"><rect x="11" y="23" width="6" height="5"/><rect x="21" y="23" width="6" height="5"/><rect x="31" y="23" width="6" height="5"/><rect x="41" y="23" width="6" height="5"/><rect x="16" y="37" width="32" height="5"/></g>'),
+  gamepad: svg('<path d="M18 18h28c9 0 14 16 14 26 0 8-9 8-13 2l-4-6H21l-4 6c-4 6-13 6-13-2 0-10 5-26 14-26z" fill="currentColor"/><path d="M17 26v9M12.5 30.500h9" stroke="#fff" stroke-width="3"/><circle cx="44" cy="27" r="3" fill="#fff"/><circle cx="50" cy="33" r="3" fill="#fff"/>'),
+  flag: svg('<path d="M14 6v54" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M14 8h40v30H14z" fill="#fff" stroke="currentColor" stroke-width="3"/><path d="M14 8h10v10H14zM34 8h10v10H34zM24 18h10v10H24zM44 18h10v10H44zM14 28h10v10H14zM34 28h10v10H34z" fill="currentColor"/>'),
+  timer: svg('<circle cx="32" cy="36" r="22" fill="none" stroke="currentColor" stroke-width="6"/><path d="M32 36V22M26 6h12" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>'),
+  knockout: svg('<path d="M32 4l7 16 17-6-8 16 12 10-17 3v15L32 48 21 58V43L4 40l12-10-8-16 17 6z" fill="currentColor"/>'),
+  sound: svg('<path d="M8 24v16h11l15 12V12L19 24z" fill="currentColor"/><path d="M42 22c5 5 5 15 0 20M49 15c9 9 9 25 0 34" stroke="currentColor" stroke-width="5" fill="none" stroke-linecap="round"/>'),
+  muted: svg('<path d="M8 24v16h11l15 12V12L19 24z" fill="currentColor"/><path d="M42 24l14 16M56 24L42 40" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>'),
+  target: svg('<circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="32" r="12" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="32" r="3" fill="currentColor"/>'),
+  wheel: svg('<circle cx="32" cy="32" r="25" fill="none" stroke="currentColor" stroke-width="7"/><circle cx="32" cy="34" r="7" fill="currentColor"/><path d="M8 34h17M39 34h17M32 41v16" stroke="currentColor" stroke-width="6"/><circle cx="32" cy="7" r="5" fill="#e5383b"/>'),
+};

@@ -1,0 +1,11 @@
+{
+  "name": "anything-kart",
+  "version": "1.0.0",
+  "description": "A kart racer you steer with anything you're holding, using your webcam and hand tracking.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python3 scripts/serve.py",
+    "check": "find src tests -name '*.js' -exec node --check {} ';'"
+  }
+}

@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Anything Kart</title>
+  <meta name="description" content="A kart racer you steer with anything you're holding. Your webcam turns any object into a steering wheel.">
+  <link rel="stylesheet" href="src/styles/main.css">
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <div id="hud"></div>
+
+  <section id="screen-title" class="screen active">
+    <button class="btn ghost icon fs-btn title-fs" data-fs title="Full screen (F)" aria-label="Full screen"></button>
+    <div class="title-wrap">
+      <div class="logo"><span class="l1">ANYTHING</span><span class="l2">KART</span></div>
+      <p class="tagline">Pick up anything. Tilt it like a wheel. <b>Race.</b></p>
+      <div id="title-cast" class="title-cast"></div>
+      <button id="btn-play" class="btn big primary">Let's race</button>
+      <p class="hint">Works with any object and a camera. Your video stays on your device.</p>
+      <button class="btn ghost small help-link" data-help>How to play</button>
+    </div>
+  </section>
+
+  <section id="screen-lobby" class="screen">
+    <div class="lobby">
+      <header class="lobby-head">
+        <button class="btn ghost" id="btn-lobby-back">Back</button>
+        <h1>Race setup</h1>
+        <button class="btn ghost icon" data-help title="How to play" aria-label="How to play">?</button>
+        <button class="btn ghost icon fs-btn" data-fs title="Full screen (F)" aria-label="Full screen"></button>
+        <button class="btn ghost icon" id="btn-mute" title="Mute (M)"></button>
+      </header>
+      <div class="lobby-grid">
+        <div class="panel racer-panel">
+          <div class="racer-top">
+            <h2>Choose your racer</h2>
+            <div id="player-slots" class="slots"></div>
+          </div>
+          <div class="racer-body">
+            <div id="showcase" class="showcase"></div>
+            <div id="roster" class="roster"></div>
+          </div>
+          <p id="players-hint" class="players-hint"></p>
+          <p id="pad-status" class="muted"></p>
+        </div>
+        <div class="race-col">
+          <div class="panel">
+            <h2>Mode</h2>
+            <div id="mode-cards" class="modes"></div>
+            <p id="mode-desc" class="pick-desc"></p>
+          </div>
+          <div class="panel">
+            <h2>Track</h2>
+            <div id="track-cards" class="tracks"></div>
+            <p id="track-desc" class="pick-desc"></p>
+          </div>
+          <div class="panel options-panel">
+            <div class="opts">
+              <label id="opt-laps-wrap">Laps <select id="opt-laps"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+              <label id="opt-cpu-wrap">CPU racers <select id="opt-cpu"></select></label>
+              <div id="opt-diff-wrap" class="diff-wrap"><span>Bot skill</span><div id="diff-pick" class="diff-pick" role="radiogroup" aria-label="Bot skill"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="lobby-foot">
+        <p id="lobby-error" class="error"></p>
+        <button id="btn-go" class="btn big primary">Next</button>
+      </footer>
+    </div>
+  </section>
+
+  <section id="screen-calib" class="screen">
+    <div class="calib">
+      <header class="lobby-head">
+        <button class="btn ghost" id="btn-calib-back">Back</button>
+        <h1 id="calib-title">Show me your wheel</h1>
+        <span class="badge" id="calib-badge"></span>
+      </header>
+      <div class="calib-body">
+        <div class="calib-video">
+          <canvas id="calib-canvas" width="640" height="480"></canvas>
+          <div id="calib-msg"></div>
+          <p class="privacy">Your video stays on this device. Nothing is uploaded.</p>
+        </div>
+        <div class="calib-side">
+          <div id="calib-players"></div>
+          <ol class="calib-steps" id="calib-steps"></ol>
+          <details class="panel calib-opts">
+            <summary>Steering options</summary>
+            <label>Steer by
+              <select id="opt-style">
+                <option value="tilt">Turning it</option>
+                <option value="both">Turning and moving it</option>
+                <option value="move">Moving it left and right</option>
+              </select>
+            </label>
+            <label>Full turn at <input type="range" id="opt-angle" min="15" max="60" step="1"> <b id="opt-angle-val"></b></label>
+            <label>Dead zone <input type="range" id="opt-dead" min="0" max="10" step="1"> <b id="opt-dead-val"></b></label>
+            <label>Sensitivity <input type="range" id="opt-sens" min="50" max="200" step="5"> <b id="opt-sens-val"></b></label>
+            <label>Fine control near the middle <input type="range" id="opt-curve" min="0" max="80" step="5"> <b id="opt-curve-val"></b></label>
+            <label>Flick sensitivity <span class="muted">(try one: the ring shows FLICK!)</span>
+              <select id="opt-flick">
+                <option value="light">Light: smallest flick counts</option>
+                <option value="normal">Normal</option>
+                <option value="firm">Firm: needs a bigger flick</option>
+              </select>
+            </label>
+            <label class="check"><input type="checkbox" id="opt-drift"> Auto drift <span class="muted">(long hard turns slide for a mini-boost)</span></label>
+            <label class="check"><input type="checkbox" id="opt-brake"> Lower it to brake <span class="muted">(off: lowering does nothing)</span></label>
+            <label class="check"><input type="checkbox" id="opt-invert"> Reverse steering</label>
+            <label class="check"><input type="checkbox" id="opt-mirror"> My camera already mirrors the picture</label>
+          </details>
+        </div>
+      </div>
+      <footer class="lobby-foot">
+        <p class="muted" id="calib-tip">Tip: holding it with both hands gives the best steering, even with a plain ball.</p>
+        <button id="btn-calib-go" class="btn big primary" disabled>Start race</button>
+      </footer>
+    </div>
+  </section>
+
+  <div id="overlay-help" class="overlay">
+    <div class="modal wide help-card" role="dialog" aria-labelledby="help-title">
+      <button class="help-x" data-help-close aria-label="Close">×</button>
+      <h2 id="help-title">How to play</h2>
+      <ol class="help-steps">
+        <li><b>Grab anything</b> (a book, a plate, a remote) or nothing at all, and hold it up with <b>both hands</b> like a steering wheel.</li>
+        <li><b>Lock on:</b> get comfortable, hold steady for a second, then turn left and right once.</li>
+        <li><b>Turn it to steer.</b> The kart drives itself.</li>
+        <li><b>Flick it to use your item:</b> a quick snap of your wrists or a quick pop up.</li>
+        <li><b>Raise it and hold</b> to start a race (or press Space).</li>
+      </ol>
+      <div class="help-rules">
+        <div><b>Players</b><span>Up to 4. Up to <b>2 on the camera</b>, standing side by side (P1 on the left, P2 on the right). Everyone else uses a keyboard or a gamepad.</span></div>
+        <div class="keys-only"><b>Keyboards</b><span>Two people can share one: one on WASD, one on the arrow keys.</span></div>
+        <div><b>Camera</b><span>Keep both hands in view. If it can't see them, the race pauses and carries on when they're back. Your video never leaves your device.</span></div>
+        <div class="keys-only"><b>Keys</b><span>Esc pause · F full screen · R recenter steering · C camera view · M mute · D diagnostics</span></div>
+      </div>
+      <div class="row"><button class="btn primary" data-help-close>Got it</button></div>
+    </div>
+  </div>
+
+  <div id="overlay-pause" class="overlay">
+    <div class="modal">
+      <h2>Paused</h2>
+      <button class="btn primary" data-pause="resume">Resume</button>
+      <button class="btn" data-pause="recenter">Recenter steering (R)</button>
+      <button class="btn fs-btn" data-fs data-fs-text>Full screen (F)</button>
+      <button class="btn" data-pause="recalib">Lock on again</button>
+      <button class="btn" data-pause="restart">Restart race</button>
+      <button class="btn" data-pause="end">End race now</button>
+      <button class="btn ghost" data-pause="quit">Quit to setup</button>
+      <p class="muted">Esc or P pause, F full screen, M mute, C camera size, R recenter, D diagnostics</p>
+    </div>
+  </div>
+
+  <div id="overlay-lost" class="overlay">
+    <div class="modal">
+      <h2 id="lost-title">Can't see your hands</h2>
+      <canvas id="lost-cam" class="lost-cam" width="320" height="240"></canvas>
+      <p class="muted" id="lost-msg">Bring both hands back into view and the race carries on by itself.</p>
+      <button class="btn primary" id="btn-lost-resume" style="display:none">Resume now</button>
+      <button class="btn ghost" id="btn-lost-menu">Pause menu</button>
+    </div>
+  </div>
+
+  <div id="overlay-results" class="overlay">
+    <canvas id="confetti"></canvas>
+    <div class="modal wide">
+      <h2 id="results-title">Results</h2>
+      <div id="results-podium" class="podium"></div>
+      <div id="results-stats" class="stats"></div>
+      <div id="results-table"></div>
+      <div class="row">
+        <button class="btn big primary" id="btn-rematch">Race again</button>
+        <button class="btn" id="btn-results-lobby">Change setup</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <div id="debug"><div id="debug-text"></div><canvas id="debug-graph" width="560" height="128"></canvas></div>
+
+  <div id="rotate-note"><div><b>Turn your phone sideways</b><span>Then prop it up so the camera can see you.</span></div></div>
+
+  <div id="file-warning">
+    <div>
+      <h1>Almost there!</h1>
+      <p>Browsers only allow the camera when the game runs from a local web server.</p>
+      <p>Double-click <b>start.command</b> in the game folder, or run <code>python3 serve.py</code>.</p>
+    </div>
+  </div>
+  <script>if (location.protocol === 'file:') document.getElementById('file-warning').style.display = 'grid';</script>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
