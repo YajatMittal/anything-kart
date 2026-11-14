@@ -385,7 +385,9 @@ export class SteeringEngine {
     if (p && this.now - this.ht.pairT < 0.2) return { x: p.mid.x, y: p.mid.y, r: p.gap * 0.36, theta: p.theta, live: true };
     if (this.bridge) return { ...this.bridge, live: true, oneHand: true };
     if (this.last && this.ringGoneFor < CFG.hintGrace) return { ...this.last, live: true };   // a hiccup: keep it as it was
-    if (g && this.last) return { ...this.last, live: false };
+    // lost: the grey ring and "Show both hands" sit where you locked on (a fixed spot that says
+    // where to bring them back), not wherever the hands happened to leave, which can be a corner
+    if (g) return { x: g.mid0.x, y: g.mid0.y, r: g.gap0 * 0.36, theta: g.theta0, live: false };
     return null;
   }
   rememberRing() {
