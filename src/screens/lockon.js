@@ -264,18 +264,30 @@ export function updateCalib(dt, now) {
   });
   $('#btn-calib-go').disabled = !camsReady();
   if (handsLoading()) drawLoading(g, W, H, secs);
-  holdToStart(dt);
+  holdToStart(dt, secs);
 }
 
 // Hold it up to start: once lock-on is done, any camera player raising it and holding for
 // START_HOLD seconds presses Start race. Lowering lets the ring run back down, so a quick raise
-// (or a tracking blip) never starts a race.
-const START_HOLD = 1.5;
-function holdToStart(dt) {
+// never starts a race. This is more forgiving than the race's raise zone on purpose:
+//  - raised hands count straight away, even if the camera lost them for a moment on the way up
+//    (the race wants hands back at normal height first, so items and brakes can't misfire);
+//  - hands right at the top of the picture count as raised (raising high can go off the top);
+//  - a short blip while holding pauses the ring instead of running it back down.
+const START_HOLD = 1.5, BLIP = 0.5;
+function raisedForStart(e) {
+  if (!e.usable) return false;
+  if (e.zoneNow === 'raise' || e.vert < e.grip.raiseOn) return true;
+  const hs = e.now - e.handsT < 0.25 ? e.hands : [];
+  return hs.length >= 2 && hs.every((h) => h.palm.y < PH * 0.12);
+}
+function holdToStart(dt, now) {
   const ready = app.state === 'calib' && camsReady();
-  const holding = ready && vision.engines.some((e) => e.usable && e.zoneNow === 'raise');
+  const holding = ready && vision.engines.some(raisedForStart);
+  if (holding) calib.raisedT = now;
+  const blip = ready && !holding && now - (calib.raisedT ?? -9) < BLIP && vision.engines.some((e) => !e.usable || !(e.now - e.handsT < 0.25 && e.hands.length >= 2));
   const before = calib.startT;
-  calib.startT = holding ? before + dt : Math.max(0, before - dt * 3);
+  calib.startT = holding ? before + dt : blip ? before : Math.max(0, before - dt * 3);
   if (holding && Math.floor(calib.startT / 0.5) > Math.floor(before / 0.5)) sound.play('count');
   for (const e of vision.engines) e.startProgress = Math.min(1, calib.startT / START_HOLD);
   if (calib.startT >= START_HOLD) { calib.startT = 0; for (const e of vision.engines) e.startProgress = 0; calibGo(); }
