@@ -228,7 +228,7 @@ export function updateCalib(dt, now) {
   vision.update();
   hands.update(now);
   vision.heartbeat(now / 1000);
-  const cv = $('#calib-canvas'), W = 640, H = 480, g = sharpCanvas(cv, W, H), s = W / PW;
+  const cv = $('#calib-canvas'), W = 640, H = 480, g = sharpCanvas(cv, W, H, vision.video), s = W / PW;
   if (vision.cameraLost) { $('#calib-msg').innerHTML = 'The camera stopped. <button class="btn" id="btn-cam-retry">Start it again</button>'; $('#btn-cam-retry').onclick = () => enterCalib(calib.resume); return; }
   if (!vision.running) return;
   const cols = camPlayers().map((p) => PLAYER_COLORS[p.i]);

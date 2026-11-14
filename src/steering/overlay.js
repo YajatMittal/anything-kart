@@ -139,9 +139,10 @@ function banner(ctx, e, x0, x1, top) {
 
 // A camera view canvas sized to the screen's real pixels, so it isn't stretched and blurry.
 // Drawing code keeps working in w x h (e.g. 640x480); the canvas just has more pixels behind it.
-export function sharpCanvas(cv, w, h) {
-  const shown = cv.clientWidth || w;
-  const k = Math.max(1, Math.min(3, Math.round(shown * (window.devicePixelRatio || 1) / w * 4) / 4));
+// Never more pixels than the camera picture has (more would only cost time, not look sharper).
+export function sharpCanvas(cv, w, h, video = null) {
+  const shown = cv.clientWidth || w, src = video?.videoHeight ? video.videoHeight * 4 / 3 : w * 2;
+  const k = Math.max(1, Math.min(2, src / w, Math.round(shown * (window.devicePixelRatio || 1) / w * 4) / 4));
   if (cv.width !== Math.round(w * k)) { cv.width = Math.round(w * k); cv.height = Math.round(h * k); }
   const g = cv.getContext('2d'); g.setTransform(k, 0, 0, k, 0, 0);
   return g;

@@ -61,6 +61,10 @@ export function launchRace(cfg) {
   hideLost();
   keepAwake(true);
   applyPip();
+  // Draw the new race once before the setup screen goes away: otherwise the last picture (maybe
+  // the end of the previous race) shows for a moment, and the graphics card's first-time setup
+  // for this track would stutter the start of the countdown instead of happening here.
+  try { race.update(1 / 60); race.render(renderer); } catch (e) { console.error(e); }
   app.state = 'race';
   showScreen(null);
   input.captureKeys = true;
@@ -133,7 +137,7 @@ export function watchTracking(dt) {
   if (app.state !== 'paused' || !lost.auto) return;
   const cps = active.map((a) => a.p), cols = cps.map((p) => PLAYER_COLORS[p.i]);
   const cam = $('#lost-cam');
-  drawTracking(sharpCanvas(cam, 320, 240), vision, es, 320, 240, { level: 'calib', colors: cols, tuning });
+  drawTracking(sharpCanvas(cam, 320, 240, vision.video), vision, es, 320, 240, { level: 'calib', colors: cols, tuning });
   const back = (e) => e.track.live || e.state === TRACK.REACQUIRING;
   if (lost.countdown === null) {
     if (!vision.cameraLost && es.every((e) => e.track.live || e.track.readyToResume)) lost.countdown = 1.5;
@@ -150,7 +154,7 @@ export function watchTracking(dt) {
   else if (es.some((e) => e.state === TRACK.REACQUIRING) && !who.length) { title = 'Found you'; text = 'Hold steady…'; }
   else { title = `Can't see ${names ? names + "'s" : 'your'} hands`; text = 'Bring both hands back into view and the race carries on by itself.'; }
   if (lost.shown !== title + text) { lost.shown = title + text; $('#lost-title').textContent = title; $('#lost-msg').textContent = text; }
-  $('#btn-lost-resume').style.display = lost.countdown !== null ? '' : 'none';
+  $('#btn-lost-resume').style.visibility = lost.countdown !== null ? '' : 'hidden';   // keeps its space, so nothing moves
 }
 function resumeFromLost() {
   lost.countdown = null; lost.auto = false;

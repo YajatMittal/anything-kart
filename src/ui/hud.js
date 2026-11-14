@@ -180,7 +180,7 @@ export class Hud {
   drawPip() {
     const v = this.deps.vision; if (!v?.running) return;
     // the small camera view: what the tracking sees (outline, hands, a few points) and its status
-    drawTracking(sharpCanvas(this.pip, 240, 180), v, v.engines, 240, 180, { level: 'pip', debug: !!this.deps.debug?.(), colors: this.deps.camColors?.() });
+    drawTracking(sharpCanvas(this.pip, 240, 180, v.video), v, v.engines, 240, 180, { level: 'pip', debug: !!this.deps.debug?.(), colors: this.deps.camColors?.() });
   }
 
   flash(k, text, cls = '') {
