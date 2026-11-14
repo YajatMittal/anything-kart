@@ -19,7 +19,7 @@ export const STEPS = ['left', 'right', 'low'];
 export const DEFAULT_TUNING = {
   deadzone: 3,          // degrees around straight that do nothing
   sensitivity: 1,       // multiplies the steering
-  maxAngle: 30,         // degrees for full lock until the lock-on measures the player's own range
+  maxAngle: 33,         // degrees for full lock until the lock-on measures the player's own range
   curve: 0.3,           // 0 = linear; higher = finer control near the middle (full lock still reachable)
   invert: false,
   style: 'tilt',        // tilt | move | both
@@ -59,7 +59,7 @@ export const CFG = {
   flickWrist: [1.2, 0.12],  // the wrists snap: both palms look shorter/longer vs. their spacing (log ratio)
   flickPush: [1.0, 0.12],   // a jab toward (or away from) the screen: the hands' spacing grows (log)
   flickWindow: 0.4,         // s: it has to get far enough within this (else it's a slow move, not a flick)
-  flickSens: { light: 0.72, normal: 0.8, firm: 1 },   // scales the speeds and distances above
+  flickSens: { light: 0.72, normal: 0.92, firm: 1.08 },   // scales the speeds and distances above
   flickCool: 0.5,           // s before the next flick can count
   flickMaxTurn: 150,        // degrees/s: wrist and jab flicks don't count while turning faster than this
   lowOn: 0.9,               // lower this far: brake (only when braking by lowering is on)

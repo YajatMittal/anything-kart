@@ -49,7 +49,7 @@ export const app = { state: 'title', race: null, attract: null, lastCfg: null };
 const DEFAULTS = {
   mode: 'race', trackId: 'coast', laps: 3, cpuCount: 5, difficulty: 'easy',
   players: [{ charId: 'sprocket', input: 'camera' }],
-  style: 'tilt', maxAngle: 30, invert: false, pip: 1,          // pip: 0 hidden, 1 small, 2 large
+  style: 'tilt', maxAngle: 33, invert: false, pip: 1,          // pip: 0 hidden, 1 small, 2 large
   deadzone: 3, sensitivity: 1, curve: 0.3, mirrored: false, brakeGesture: false, flickSens: 'normal', autoDrift: false, v: 2,
 };
 function loadSettings() {
