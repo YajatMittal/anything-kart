@@ -100,10 +100,10 @@ export class SteeringEngine {
   // other don't change when they move nearer or further, so they still match after a loss.)
   samePair(a, b, gap, size) {
     const g = this.grip, ratio = gap / size / g.ratio0;
-    if (ratio < 0.45 || ratio > 2.2) return null;
+    if (ratio < 0.35 || ratio > 2.8) return null;                   // held a bit closer or wider than at lock-on is fine
     const sL = a.size / g.size0.L, sR = b.size / g.size0.R;
     if (sL / sR > 2 || sR / sL > 2) return null;                   // the two hands keep their size relationship (roughly: a hand turning on an object looks smaller)
-    if (Math.abs(wrap180(Math.atan2(b.palm.y - a.palm.y, b.palm.x - a.palm.x) * 180 / Math.PI - g.theta0)) > 80) return null;
+    if (Math.abs(wrap180(Math.atan2(b.palm.y - a.palm.y, b.palm.x - a.palm.x) * 180 / Math.PI - g.theta0)) > 100) return null;   // hard turns count (past this, left and right swap)
     return Math.abs(Math.log(ratio)) * 40;
   }
 
@@ -121,13 +121,22 @@ export class SteeringEngine {
     const hand = (g.size0.L + g.size0.R) / 2 * scale;            // height in hand-lengths; sideways in hand spacings
     const e = { rot: wrap180(p.theta - g.theta0), v: (p.mid.y - g.mid0.y) / hand, h: (p.mid.x - g.mid0.x) / (g.gap0 * scale),
       conf: p.conf, gap: p.gap, scale, pair: p };
-    // reject what can't be a real movement: low confidence, or a jump no hands make in one frame
-    const L = this.lastGood;
-    const jump = L && now - L.t < 0.3 && (Math.abs(wrap180(e.rot - L.rot)) > CFG.maxJump || Math.abs(Math.log(e.gap / L.gap)) > 0.35);
+    // reject what can't be a real movement: low confidence, or a jump no hands make in the time
+    // between two hand-tracking results (slower devices track less often, so allow more per result)
+    const L = this.lastGood, k = this.jumpScale(L);
+    const jump = L && now - L.t < 0.3 && (Math.abs(wrap180(e.rot - L.rot)) > CFG.maxJump * k || Math.abs(Math.log(e.gap / L.gap)) > 0.35 * k);
     if (e.conf < CFG.minConf || jump) { this.measure = 'reject'; return null; }
-    this.measure = 'ok'; this.lastGood = { rot: e.rot, gap: e.gap, t: now };
+    this.measure = 'ok'; this.lastGood = { rot: e.rot, gap: e.gap, t: now, ht: this.handsT };
     this.learnGrip(p, now);
     return e;
+  }
+
+  // How much bigger a jump is believable: the limits are for 1/30 s between hand-tracking
+  // results, so a tracker running at 12 a second allows 2.5 times as much (never over 3 times,
+  // which would let a left/right mix-up through).
+  jumpScale(L) {
+    const gap = L?.ht !== undefined ? this.handsT - L.ht : 0;
+    return clamp(gap * 30, 1, 3);
   }
 
   // While both hands are seen: how each hand is tilted relative to the line between them. A hand
@@ -162,8 +171,8 @@ export class SteeringEngine {
       if (Math.abs(diff) < 20) { theta += diff * 0.4; conf = 0.65; }
     }
     const rot = wrap180(theta - g.theta0), L = this.lastGood;
-    if (L && now - L.t < 0.3 && Math.abs(wrap180(rot - L.rot)) > CFG.maxJump) { this.measure = 'reject'; return null; }
-    this.measure = 'ok'; this.oneHand = true; this.lastGood = { rot, gap: L ? L.gap : k.gap, t: now };
+    if (L && now - L.t < 0.3 && Math.abs(wrap180(rot - L.rot)) > CFG.maxJump * this.jumpScale(L)) { this.measure = 'reject'; return null; }
+    this.measure = 'ok'; this.oneHand = true; this.lastGood = { rot, gap: L ? L.gap : k.gap, t: now, ht: this.handsT };
     // where the middle would be (for the ring)
     const a = theta * Math.PI / 180, sg = s === 'R' ? 1 : -1;
     this.bridge = { x: h.palm.x - sg * half * Math.cos(a), y: h.palm.y - sg * half * Math.sin(a), r: k.gap * 0.36, theta };
