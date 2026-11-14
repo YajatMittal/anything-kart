@@ -36,6 +36,15 @@ function pickWeighted(table) {
   return table[0][0];
 }
 
+// The camera's view angle is set top to bottom, so a tall, narrow view (two players side by side,
+// or a phone held upright) would see much less to the sides: the start banner and the road ahead
+// get cut off. Narrow views open up until they see at least MIN_SIDE_FOV degrees side to side.
+const MIN_SIDE_FOV = 64, MAX_FOV = 90;
+function baseFov(fov, aspect) {
+  const need = 2 * Math.atan(Math.tan(MIN_SIDE_FOV * Math.PI / 360) / Math.max(0.3, aspect)) * 180 / Math.PI;
+  return Math.max(fov, Math.min(MAX_FOV, need));
+}
+
 export class Race {
   constructor(cfg, deps) {
     this.cfg = cfg; this.deps = deps; this.sound = deps.sound;
@@ -95,7 +104,7 @@ export class Race {
       }
       const k = new Kart(this, e.ch, opts);
       const row = Math.floor(slot / 2), col = slot % 2;
-      const idx = tr.N - 3 - row * 4 - col * 2;
+      const idx = tr.N - 8 - row * 4 - col * 2;   // the front row sits far enough back to see the whole start banner
       k.placeAt(idx, (col ? -1 : 1) * tr.halfW * 0.42, idx - tr.N);
       k.speedMul = e.human ? 1 : this.skill;
       this.karts.push(k);
@@ -146,7 +155,7 @@ export class Race {
     this.views.forEach((v, i) => {
       const [x, y, w, h] = rects[i].map(Math.round);
       v.rect = { x, y, w, h };
-      v.cam.aspect = w / h; v.cam.updateProjectionMatrix();
+      v.cam.aspect = w / h; v.fov = v.cam.fov = baseFov(v.cinematic ? 60 : 70, w / h); v.cam.updateProjectionMatrix();
     });
     this.hud?.layout();
   }
@@ -643,7 +652,7 @@ export class Race {
       cam.position.x += (Math.random() - 0.5) * v.shake; cam.position.y += (Math.random() - 0.5) * v.shake;
     }
     cam.lookAt(k.x + sx * 5, 1.4, k.z + cz * 5);
-    const fovT = (v.cinematic ? 60 : 70) + clamp(Math.abs(k.speed) / BASE_MAX, 0, 1.4) * 6 + (k.boostT > 0 ? 9 : 0);
+    const fovT = baseFov(v.cinematic ? 60 : 70, cam.aspect) + clamp(Math.abs(k.speed) / BASE_MAX, 0, 1.4) * 6 + (k.boostT > 0 ? 9 : 0);
     v.fov += (fovT - v.fov) * Math.min(1, dt * 4);
     if (Math.abs(cam.fov - v.fov) > 0.05) { cam.fov = v.fov; cam.updateProjectionMatrix(); }
   }
