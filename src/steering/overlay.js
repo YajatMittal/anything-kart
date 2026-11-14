@@ -10,7 +10,7 @@
 //   'debug'  everything, plus the straight-ahead and height reference lines
 
 import { PW, PH } from '../tracking/vision.js';
-import { TRACK, PHASE, STEPS, CFG, D2R } from './config.js';
+import { TRACK, PHASE, CFG, D2R } from './config.js';
 
 const BONES = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [0, 17], [17, 18], [18, 19], [19, 20]];
 const GREEN = '#2ee6a6', AMBER = '#ffb627', RED = '#ff5a5f', ORANGE = '#f26b21', GREY = 'rgba(255,255,255,0.55)';

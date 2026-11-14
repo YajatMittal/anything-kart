@@ -15,8 +15,7 @@
 // The lock-on (straight-ahead, range) is only ever set by the player: by the lock-on itself or
 // Recenter. Losing and finding the hands never changes it.
 
-import { PH } from '../tracking/vision.js';
-import { TRACK, PHASE, STEPS, CFG, emptyOutput, clamp, wrap180, dist, mean, circMean } from './config.js';
+import { TRACK, PHASE, STEPS, CFG, emptyOutput, clamp, wrap180, mean, circMean } from './config.js';
 import { OneEuro, ema, slew } from './filters.js';
 import { HandTracker } from './hands-pose.js';
 import { TrackingState } from './state.js';
@@ -63,7 +62,6 @@ export class SteeringEngine {
   }
 
   setHands(hands, t) { this.hands = hands; this.handsT = t; }
-  freshHands() { return performance.now() / 1000 - this.handsT < CFG.handFresh ? this.hands : []; }
 
   get calibrated() { return !!this.grip; }
   // the lock-on moves this player does (lowering only when it brakes), and the next one not done
