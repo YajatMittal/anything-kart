@@ -14,7 +14,9 @@ export class TrackingState {
   update(m, dt, inGame) {
     const ok = m === 'ok';
     this.last = m;
-    if (ok) { this.badT = 0; this.stableT += dt; } else { this.badT += dt; this.stableT = 0; }
+    // a single dropped frame doesn't restart "steady": only a real gap (tolerate) does, so a
+    // tracker that misses the odd frame can still get control back
+    if (ok) { this.badT = 0; this.stableT += dt; } else { this.badT += dt; if (this.badT >= CFG.tolerate) this.stableT = 0; }
     const S = this.state, wait = m === 'one' ? CFG.oneHandWait : CFG.pauseAfter;
     if (S === TRACK.TRACKING || S === TRACK.DEGRADED) {
       if (ok) this.state = TRACK.TRACKING;

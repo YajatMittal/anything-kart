@@ -238,11 +238,15 @@ export function updateCalib(dt, now) {
     const out = e.output;
     if (e.justLocked) { e.justLocked = false; sound.play('lock'); }
     if (e.justPassed) { sound.play(e.canStart ? 'lap' : 'box'); e.justPassed = null; }
-    if (!e.calibrated && !e.ht.L && !e.ht.R && !handsLoading()) drawHandGuides(g, s, e, cols[z], secs);
+    if (!e.calibrated && e.handsGoneFor > 0.6 && !handsLoading()) drawHandGuides(g, s, e, cols[z], secs);
     const p = calib.panels[z]; if (!p) return;
     const [status, ok] = statusFor(e);
-    if (p.status.textContent !== status) p.status.textContent = status;
-    p.status.classList.toggle('ok', ok);
+    // a message of a different kind must last 0.25 s before it shows (the same kind, like the
+    // hold percentage counting up, updates straight away), so a hiccup can't make it flicker
+    const kind = status.replace(/[\d%()…]/g, '');
+    if (kind !== p.kind) { if (p.nextKind !== kind) { p.nextKind = kind; p.nextT = secs; } else if (secs - p.nextT > 0.25) p.kind = kind; }
+    else p.nextKind = null;
+    if (kind === p.kind && p.status.textContent !== status) { p.status.textContent = status; p.status.classList.toggle('ok', ok); }
     const live = e.usable, st = out.steering;
     // before the lock-on the little wheel shows how the hands are tilted; after, the steering itself
     const pre = !e.calibrated && e.ht.pair ? ((e.ht.pair.theta + 540) % 360) - 180 : null;

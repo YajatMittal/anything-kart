@@ -384,14 +384,20 @@ export class SteeringEngine {
     const p = this.ht.pair, g = this.grip;
     if (p && this.now - this.ht.pairT < 0.2) return { x: p.mid.x, y: p.mid.y, r: p.gap * 0.36, theta: p.theta, live: true };
     if (this.bridge) return { ...this.bridge, live: true, oneHand: true };
+    if (this.last && this.ringGoneFor < CFG.hintGrace) return { ...this.last, live: true };   // a hiccup: keep it as it was
     if (g && this.last) return { ...this.last, live: false };
     return null;
   }
   rememberRing() {
     const p = this.ht.pair;
-    if (p && this.now - this.ht.pairT < 0.2) this.last = { x: p.mid.x, y: p.mid.y, r: p.gap * 0.36, theta: p.theta };
-    else if (this.bridge) this.last = { x: this.bridge.x, y: this.bridge.y, r: this.bridge.r, theta: this.bridge.theta };
+    if (this.ht.L || this.ht.R) this.handSeenT = this.now;
+    if (p && this.now - this.ht.pairT < 0.2) { this.last = { x: p.mid.x, y: p.mid.y, r: p.gap * 0.36, theta: p.theta }; this.ringT = this.now; }
+    else if (this.bridge) { this.last = { x: this.bridge.x, y: this.bridge.y, r: this.bridge.r, theta: this.bridge.theta }; this.ringT = this.now; }
   }
+  // For what's shown on screen only (never the steering): a hand-tracking hiccup this short
+  // shouldn't make the ring, the hand guides or "Show both hands" flash on and off.
+  get handsGoneFor() { return this.now - (this.handSeenT ?? -99); }
+  get ringGoneFor() { return this.now - (this.ringT ?? -99); }
 
   diag() {
     const ht = this.ht, e = this.est, g = this.grip;
