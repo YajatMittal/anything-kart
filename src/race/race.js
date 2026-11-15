@@ -297,7 +297,7 @@ export class Race {
   // ---------------------------------------------------------------- items
   rollItem(k) {
     const n = this.alive.length, r = n > 1 ? (k.place - 1) / (n - 1) : 0;
-    let table = r < 0.25 ? [['mud', 38], ['snowball', 16], ['acorns', 26], ['chili', 20]]
+    let table = r < 0.25 ? [['mud', 26], ['snowball', 15], ['acorns', 27], ['chili', 24], ['bubble', 8]]
       : r < 0.6 ? [['chili', 31], ['snowball', 20], ['bee', 22], ['mud', 13], ['chili3', 10], ['bubble', 4]]
         : [['chili3', 30], ['bee', 24], ['bubble', 16], ['chili', 24], ['snowball', 6]];
     if (this.mode === 'acorns') table = table.concat([['acorns', 30]]);
