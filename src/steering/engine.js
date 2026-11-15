@@ -228,8 +228,8 @@ export class SteeringEngine {
       tt[k] = cond ? tt[k] + dt : 0;
       if (tt[k] >= CFG.stepHold && cond) { T[k] = true; this.justPassed = k; this.nextStep(); }
     }
-    // never below 33°: people often do a small turn here, which made the race steering twitchy
-    if (T.left && T.right && !this.manualRange) g.maxAngle = clamp(0.8 * Math.min(-e.minA, e.maxA), 33, 45);
+    // never below 30°: people often do a small turn here, which made the race steering twitchy
+    if (T.left && T.right && !this.manualRange) g.maxAngle = clamp(0.8 * Math.min(-e.minA, e.maxA), 30, 45);
   }
 
   // ------------------------------------------------------------------ smoothing, state, output

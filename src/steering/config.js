@@ -19,7 +19,7 @@ export const STEPS = ['left', 'right', 'low'];
 export const DEFAULT_TUNING = {
   deadzone: 3,          // degrees around straight that do nothing
   sensitivity: 1,       // multiplies the steering
-  maxAngle: 33,         // degrees for full lock until the lock-on measures the player's own range
+  maxAngle: 30,         // degrees for full lock until the lock-on measures the player's own range
   curve: 0.3,           // 0 = linear; higher = finer control near the middle (full lock still reachable)
   invert: false,
   style: 'tilt',        // tilt | move | both
