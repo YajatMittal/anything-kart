@@ -10,7 +10,7 @@
 //   'debug'  everything, plus the straight-ahead and height reference lines
 
 import { PW, PH } from '../tracking/vision.js';
-import { TRACK, PHASE, CFG, D2R } from './config.js';
+import { TRACK, PHASE, CFG, D2R, wrap180 } from './config.js';
 
 const BONES = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [0, 17], [17, 18], [18, 19], [19, 20]];
 const GREEN = '#2ee6a6', AMBER = '#ffb627', RED = '#ff5a5f', ORANGE = '#f26b21', GREY = 'rgba(255,255,255,0.55)';
@@ -43,7 +43,10 @@ function ring(ctx, e, sx, sy, col, small, opts) {
   const cx = r.x * sx, cy = r.y * sy, R = Math.max(small ? 8 : 14, r.r * s);
   const turn = Math.min(1, Math.abs(e.output.steering));
   const c = !r.live ? GREY : live ? mix('#ffffff', ORANGE, turn) : col;
-  ctx.save(); ctx.translate(cx, cy); ctx.rotate(r.theta * D2R);
+  // after the lock-on the ring turns by how far the hands are from their own straight ahead (what
+  // the kart does), not by their tilt in the picture; before it, by their tilt
+  const g = e.grip, turned = g ? wrap180(r.theta - g.theta0 - e.rotZero) : r.theta;
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(turned * D2R);
   ctx.setLineDash(r.live ? [] : [8, 7]);
   ctx.lineWidth = small ? 5 : 9; ctx.strokeStyle = 'rgba(22,48,43,0.5)'; ctx.beginPath(); ctx.arc(0, 0, R, 0, 7); ctx.stroke();
   ctx.lineWidth = small ? 2.5 : 5; ctx.strokeStyle = c; ctx.beginPath(); ctx.arc(0, 0, R, 0, 7); ctx.stroke();
@@ -120,6 +123,7 @@ function banner(ctx, e, x0, x1, top) {
   let title, sub, n = null;
   if (!e.calibrated) {
     if (e.phase === PHASE.SETTLE) { title = 'Get comfortable'; sub = 'Hold it how you want to steer'; }
+    else if (e.phase === PHASE.HOLD && e.tilted) { title = 'Hold it level'; sub = 'Like driving straight'; }
     else if (e.phase === PHASE.HOLD) { title = 'Now hold steady'; sub = 'This becomes straight ahead'; }
     else return;
   } else if (e.doneT > 0) { title = 'Nice!'; sub = e.stepKey ? `Next: ${STEP_TEXT[e.stepKey][0].toLowerCase()}` : ''; }

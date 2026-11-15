@@ -180,6 +180,7 @@ export class SteeringEngine {
   // ------------------------------------------------------------------ the lock-on
   gripCheck(dt) {
     const p = this.ht.pair;
+    this.tilted = false;
     if (!p) {
       this.findT = Math.max(0, this.findT - dt * 2);
       if (this.samples.length) this.samples.length = Math.max(0, this.samples.length - 2);
@@ -192,8 +193,12 @@ export class SteeringEngine {
     this.findT = Math.min(CFG.settle + 0.1, this.findT + dt);
     if (this.findT < CFG.settle) { this.phase = PHASE.SETTLE; this.msg = 'Get comfortable…'; return; }
     this.phase = PHASE.HOLD;
-    // a steady hold: restart if it moves
+    // straight ahead is saved from this hold, so it has to be about level: a tilted straight makes
+    // a slight lean the wrong way steer the other way (a little more room once the hold has begun)
     const S = this.samples;
+    this.tilted = Math.abs(wrap180(p.theta)) > CFG.levelMax + (S.length ? 3 : 0);
+    if (this.tilted) { this.samples = []; this.msg = 'Hold it level…'; return; }
+    // a steady hold: restart if it moves
     if (S.length) {
       const th = circMean(S.map((s) => s.theta)), mx = mean(S.map((s) => s.mid.x)), my = mean(S.map((s) => s.mid.y));
       if (Math.abs(wrap180(p.theta - th)) > 7 || Math.hypot(p.mid.x - mx, p.mid.y - my) > p.gap * 0.18) { this.samples = []; this.msg = 'Hold still for a moment…'; return; }

@@ -29,6 +29,7 @@ export const DEFAULT_TUNING = {
 
 // Timing and thresholds. Starting values; tune them through real play.
 export const CFG = {
+  levelMax: 10,             // degrees: the lock-on only saves "straight" from a hold about this level
   hintGrace: 0.4,           // s: on-screen hints (ring, "Show both hands") ride over tracking gaps this short
   handFresh: 0.2,           // s: hand results older than this are never used as current
   tolerate: 0.35,           // s: brief detection gaps or rejected frames hold the last good value
