@@ -152,7 +152,7 @@ export function sharpCanvas(cv, w, h, video = null) {
   return g;
 }
 
-// engines: SteeringEngine[]. opts: { level, colors, tuning }
+// engines: SteeringEngine[]. opts: { level, colors, tuning, outline (hand outlines in the race view too) }
 export function drawTracking(ctx, vision, engines, w, h, opts = {}) {
   if (!vision.running) return;
   const level = opts.level || 'calib', debug = level === 'debug' || opts.debug, pip = level === 'pip';
@@ -168,7 +168,7 @@ export function drawTracking(ctx, vision, engines, w, h, opts = {}) {
   engines.forEach((e, k) => {
     const col = colors[k], g = e.grip;
     const hands = now - e.handsT < 0.25 ? [e.ht.L, e.ht.R].filter(Boolean) : [];
-    if (!pip || debug) for (const hd of hands) skeleton(ctx, hd, sx, sy, col);
+    if (!pip || debug || opts.outline) for (const hd of hands) skeleton(ctx, hd, sx, sy, col);
     ring(ctx, e, sx, sy, col, pip, opts);
     if (level === 'calib' && !e.inGame) banner(ctx, e, e.zone.x0 * sx, e.zone.x1 * sx, 0);
     if (debug && g) {
