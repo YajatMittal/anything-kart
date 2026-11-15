@@ -429,7 +429,9 @@ export class World {
   build_canyon() {
     this.mountains(0xb85a33);
     for (const spot of this.scatter(24, 34, 190)) {
-      const g = new THREE.Group(), s = 0.7 + this.rand() * 0.9;
+      // a big mesa near the road is shrunk so its base (radius 33) stays behind the wall
+      const room = (this.track.clearance(spot.x, spot.z) - this.track.fence - 3) / 33;
+      const g = new THREE.Group(), s = Math.min(0.7 + this.rand() * 0.9, room);
       mesh(g, new THREE.CylinderGeometry(24, 33, 26, 7), low(0xb85a33), 0, 13, 0);
       mesh(g, new THREE.CylinderGeometry(20, 24, 18, 7), low(0xd07a45), 0, 35, 0);
       mesh(g, new THREE.CylinderGeometry(15, 20, 9, 7), low(0xa34b2a), 0, 48.5, 0);
