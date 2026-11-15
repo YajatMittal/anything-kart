@@ -297,10 +297,12 @@ export class Race {
   // ---------------------------------------------------------------- items
   rollItem(k) {
     const n = this.alive.length, r = n > 1 ? (k.place - 1) / (n - 1) : 0;
-    let table = r < 0.25 ? [['mud', 35], ['snowball', 30], ['acorns', 25], ['chili', 10]]
-      : r < 0.6 ? [['chili', 25], ['snowball', 22], ['bee', 25], ['mud', 15], ['chili3', 8], ['bubble', 5]]
-        : [['chili3', 28], ['bee', 26], ['bubble', 18], ['chili', 20], ['snowball', 8]];
+    let table = r < 0.25 ? [['mud', 33], ['snowball', 28], ['acorns', 22], ['chili', 17]]
+      : r < 0.6 ? [['chili', 31], ['snowball', 20], ['bee', 22], ['mud', 13], ['chili3', 10], ['bubble', 4]]
+        : [['chili3', 30], ['bee', 24], ['bubble', 16], ['chili', 24], ['snowball', 6]];
     if (this.mode === 'acorns') table = table.concat([['acorns', 30]]);
+    // a full acorn bag (10) can't use more acorns in a normal race, so it rolls something else
+    else if (k.acorns >= ACORN_CAP) table = table.filter(([id]) => id !== 'acorns');
     return pickWeighted(table);
   }
 
