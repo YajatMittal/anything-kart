@@ -86,8 +86,10 @@ export class SteeringEngine {
     const dt = clamp(now - this.lastT || 1 / 30, 1 / 120, 0.1); this.lastT = now; this.now = now; this.dt = dt;
     const fresh = !stale && now - this.handsT < CFG.handFresh ? this.hands : [];
     const g = this.grip;
-    // keep following the original pair: after the lock-on, a pair must have the same grip shape
-    this.ht.refTheta = g ? g.theta0 : null;
+    // keep following the original pair: after the lock-on, a pair must have the same grip shape.
+    // Before it, nobody holds a wheel upside down: hands that look it have left and right swapped
+    // (easily done when one hand shows up first and the tracker guesses which hand it is)
+    this.ht.refTheta = g ? g.theta0 : 0;
     this.ht.update(fresh, now, g ? (a, b, gap, size) => this.samePair(a, b, gap, size) : null);
     this.rememberRing();
     if (!g) { this.gripCheck(dt); this.idle(dt); return; }
