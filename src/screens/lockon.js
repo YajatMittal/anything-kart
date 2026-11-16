@@ -213,7 +213,7 @@ function statusFor(e) {
   }
   if (!e.calibrated) {
     if (e.phase === PHASE.SETTLE) return ['Found your hands! Get comfortable…', false];
-    if (e.phase === PHASE.HOLD && e.tilted) return ['Hold it level, like driving straight', false];
+    if (e.phase === PHASE.HOLD && e.tilted) return [`Hold it level: raise your ${e.lowSide} hand a little`, false];
     if (e.phase === PHASE.HOLD) return [`Hold steady… (${Math.round(e.holdProgress * 100)}%)`, false];
     return [e.msg || 'Hold both hands up, as if gripping a wheel', false];
   }

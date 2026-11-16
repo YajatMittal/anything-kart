@@ -41,7 +41,7 @@ export class SteeringEngine {
   resetGrip() {
     this.phase = PHASE.FIND;
     this.grip = null;                // set by the lock-on: { theta0, mid0, gap0, size0: {L, R}, ratio0, maxAngle, raiseOn, lowOn }
-    this.samples = []; this.findT = 0; this.msg = '';
+    this.samples = []; this.findT = 0; this.msg = ''; this.levelT = 0; this.tilted = false;
     this.tests = { hold: false, left: false, right: false, low: false };
     this.tt = { left: 0, right: 0, low: 0 };
     this.ext = { minA: 0, maxA: 0, minV: 0, maxV: 0 };
@@ -186,7 +186,7 @@ export class SteeringEngine {
     if (!p) {
       this.findT = Math.max(0, this.findT - dt * 2);
       if (this.samples.length) this.samples.length = Math.max(0, this.samples.length - 2);
-      if (this.findT === 0) this.phase = PHASE.FIND;
+      if (this.findT === 0) { this.phase = PHASE.FIND; this.levelT = 0; }
       const n = (this.ht.L ? 1 : 0) + (this.ht.R ? 1 : 0);
       this.msg = n === 1 ? 'Now show your other hand too' : 'Hold both hands up, as if gripping a wheel';
       return;
@@ -195,11 +195,17 @@ export class SteeringEngine {
     this.findT = Math.min(CFG.settle + 0.1, this.findT + dt);
     if (this.findT < CFG.settle) { this.phase = PHASE.SETTLE; this.msg = 'Get comfortable…'; return; }
     this.phase = PHASE.HOLD;
-    // straight ahead is saved from this hold, so it has to be about level: a tilted straight makes
-    // a slight lean the wrong way steer the other way (a little more room once the hold has begun)
-    const S = this.samples;
-    this.tilted = Math.abs(wrap180(p.theta)) > CFG.levelMax + (S.length ? 3 : 0);
-    if (this.tilted) { this.samples = []; this.msg = 'Hold it level…'; return; }
+    // straight ahead is saved from this hold, so it should be about level: a tilted straight makes
+    // a slight lean the wrong way steer the other way (a little more room once the hold has begun).
+    // Only a nudge: after levelWait it takes the hold as it is (a crooked camera, or a grip that's
+    // just like that), so nobody gets stuck here.
+    const S = this.samples, tilt = wrap180(p.theta);
+    this.tilted = Math.abs(tilt) > CFG.levelMax + (S.length ? 3 : 0) && this.levelT < CFG.levelWait;
+    if (this.tilted) {
+      this.levelT += dt;
+      this.lowSide = tilt > 0 ? 'right' : 'left';     // + is turned clockwise: the right hand is lower
+      this.samples = []; this.msg = `Raise your ${this.lowSide} hand a little`; return;
+    }
     // a steady hold: restart if it moves
     if (S.length) {
       const th = circMean(S.map((s) => s.theta)), mx = mean(S.map((s) => s.mid.x)), my = mean(S.map((s) => s.mid.y));

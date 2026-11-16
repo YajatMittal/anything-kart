@@ -123,7 +123,7 @@ function banner(ctx, e, x0, x1, top) {
   let title, sub, n = null;
   if (!e.calibrated) {
     if (e.phase === PHASE.SETTLE) { title = 'Get comfortable'; sub = 'Hold it how you want to steer'; }
-    else if (e.phase === PHASE.HOLD && e.tilted) { title = 'Hold it level'; sub = 'Like driving straight'; }
+    else if (e.phase === PHASE.HOLD && e.tilted) { title = 'Hold it level'; sub = `Raise your ${e.lowSide} hand a little`; }
     else if (e.phase === PHASE.HOLD) { title = 'Now hold steady'; sub = 'This becomes straight ahead'; }
     else return;
   } else if (e.doneT > 0) { title = 'Nice!'; sub = e.stepKey ? `Next: ${STEP_TEXT[e.stepKey][0].toLowerCase()}` : ''; }
