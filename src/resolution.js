@@ -31,5 +31,3 @@ export function watchSpeed(dt, race) {
     if (s.fastT >= 6) { setStep(s.step - 1); s.upAt = s.clock; s.fastT = 0; }
   } else s.fastT = 0;
 }
-
-export const resolutionStep = () => s.step;

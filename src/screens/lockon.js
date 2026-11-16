@@ -23,7 +23,7 @@ const TEST_LABELS = { hold: 'Straight ahead', left: 'Turn left', right: 'Turn ri
 // Every camera player has done the lock-on and turned left and right once.
 export const camsReady = () => vision.engines.length === camPlayers().length && vision.engines.every((e) => (calib.resume ? e.calibrated : e.canStart));
 
-export function applyTuning() {
+function applyTuning() {
   Object.assign(tuning, { deadzone: settings.deadzone, sensitivity: settings.sensitivity, curve: settings.curve, invert: settings.invert, style: settings.style, maxAngle: settings.maxAngle, brake: !!settings.brakeGesture, flick: settings.flickSens || 'normal' });
   CameraController.autoDrift = !!settings.autoDrift;
   vision.flip = !settings.mirrored;

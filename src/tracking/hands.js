@@ -115,7 +115,7 @@ const len = (v) => Math.hypot(v.x, v.y);
 // One MediaPipe hand -> { palm, wrist, index, middle, pinky, size, axis, conf, pts }, or null if
 // it doesn't look like a real hand (a face or a smudge the detector fired on). Only the palm has
 // to be visible and hand-shaped; fingers can be hidden. map: whole-picture -> on-screen view.
-export function toHand(h, flip = true, map = { ox: 0, oy: 0, kx: 1, ky: 1 }) {
+function toHand(h, flip = true, map = { ox: 0, oy: 0, kx: 1, ky: 1 }) {
   if (!h?.pts || h.pts.length < 21) return null;
   for (const i of PALM) { const [x, y] = h.pts[i]; if (!(x > -0.03 && x < 1.03 && y > -0.03 && y < 1.03)) return null; }   // palm out of the camera's view
   const pts = h.pts.map(([x, y]) => { const u = (x - map.ox) * map.kx, w = (y - map.oy) * map.ky; return { x: (flip ? 1 - u : u) * PW, y: w * PH }; });

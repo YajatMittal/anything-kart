@@ -13,7 +13,7 @@ export const $$ = (s) => Array.from(document.querySelectorAll(s));
 // ------------------------------------------------------------------ device
 export const params = new URLSearchParams(location.search);
 export const TOUCH = params.has('touch') || !!window.matchMedia?.('(pointer: coarse)').matches;
-export const SMALL = params.has('touch') || (TOUCH && Math.min(screen.width, screen.height) < 820);
+const SMALL = params.has('touch') || (TOUCH && Math.min(screen.width, screen.height) < 820);
 // Phones get everything except the biggest shadow map; if one can't keep up, the resolution steps
 // down by itself (resolution.js). ?quality=low|medium|high overrides it, for testing.
 export const QUALITY = ['low', 'medium', 'high'].includes(params.get('quality')) ? params.get('quality') : SMALL ? 'medium' : 'high';
